@@ -1,0 +1,54 @@
+{
+  "name": "مفكرة الاستوديو | Studio Planner",
+  "short_name": "مفكرة الاستوديو",
+  "description": "نظام محلي متكامل لإدارة مشاريع الاستوديو، مواعيد القياسات، والمهام التنفيذية بدون إنترنت",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#11171a",
+  "theme_color": "#1f6355",
+  "dir": "rtl",
+  "lang": "ar",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "الأجندة والمواعيد",
+      "short_name": "الأجندة",
+      "url": "./index.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "لوحة المشاريع",
+      "short_name": "المشاريع",
+      "url": "./projects.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "إعدادات النظام",
+      "short_name": "الإعدادات",
+      "url": "./settings.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

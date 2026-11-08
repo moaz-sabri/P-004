@@ -1,0 +1,247 @@
+/* ==========================================================================
+   Agenda View Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Inline Quick-Add Bar
+   -------------------------------------------------------------------------- */
+.quick-add-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.quick-add-bar:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.quick-add-icon {
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.quick-add-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--ink-primary);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.quick-add-input::placeholder {
+  color: var(--ink-muted);
+}
+
+.quick-add-select {
+  border: 1px solid var(--border-line);
+  background: var(--bg-app);
+  color: var(--ink-primary);
+  font-size: 0.84rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+}
+
+.quick-add-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent-primary);
+  color: var(--accent-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.quick-add-submit:hover {
+  background: var(--accent-hover);
+}
+
+.agenda-section {
+  margin-bottom: 24px;
+}
+
+.agenda-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  margin: 22px 0 10px;
+  padding-bottom: 4px;
+}
+
+.agenda-group-title.group-late {
+  color: var(--color-late);
+}
+
+.agenda-group-title .count-badge {
+  font-size: 0.76rem;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-chip);
+  color: var(--ink-secondary);
+}
+
+.agenda-group-title.group-late .count-badge {
+  background: var(--color-late-light);
+  color: var(--color-late);
+}
+
+/* --------------------------------------------------------------------------
+   Task Item Row
+   -------------------------------------------------------------------------- */
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+  position: relative;
+}
+
+.task-row:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.task-checkbox-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+  border-radius: var(--radius-xs);
+}
+
+.task-content {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.task-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--ink-primary);
+  line-height: 1.4;
+  margin-bottom: 3px;
+  word-break: break-word;
+  transition: color var(--transition-fast);
+}
+
+.task-row.is-done .task-title {
+  text-decoration: line-through;
+  color: var(--ink-muted);
+}
+
+.task-row.is-done {
+  opacity: 0.72;
+  background: var(--bg-subtle);
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--ink-secondary);
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-project {
+  font-weight: 500;
+  color: var(--accent-primary);
+  background: var(--accent-light);
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+}
+
+.meta-phone a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  direction: ltr;
+  color: var(--accent-primary);
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.task-row:hover .task-actions {
+  opacity: 1;
+}
+
+.task-action-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.task-action-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--ink-primary);
+}
+
+.task-action-btn.btn-delete:hover {
+  background: var(--color-late-light);
+  color: var(--color-late);
+}
+
+.delivery-bullet {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brass);
+  flex-shrink: 0;
+}

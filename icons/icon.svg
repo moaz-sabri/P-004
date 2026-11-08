@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#246a5d"/>
+      <stop offset="100%" stop-color="#14463d"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5d77f"/>
+      <stop offset="100%" stop-color="#c99738"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded canvas -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)"/>
+
+  <!-- Subtle inner border -->
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="4"/>
+
+  <!-- Studio Emblem: Layered sheets / Architect & Planner layers -->
+  <g filter="url(#shadow)" transform="translate(40, 36)">
+    <!-- Bottom layer -->
+    <path d="M216 340 L60 250 L216 160 L372 250 Z" fill="rgba(255,255,255,0.25)"/>
+    
+    <!-- Middle layer -->
+    <path d="M216 260 L60 170 L216 80 L372 170 Z" fill="url(#goldGrad)"/>
+    
+    <!-- Top layer -->
+    <path d="M216 180 L60 90 L216 0 L372 90 Z" fill="#ffffff"/>
+
+    <!-- Small Checkmark emblem on top layer -->
+    <circle cx="216" cy="90" r="32" fill="#1f6355"/>
+    <path d="M204 90 L212 98 L228 82" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
