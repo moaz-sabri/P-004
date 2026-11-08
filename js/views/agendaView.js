@@ -28,7 +28,14 @@
     var S = global.StudioStore;
     var isProjMilestone = item.source === "project-delivery";
     var proj = S.getProject(item.pid);
-    var kindMeta = T.KINDS[item.kind] || { label: "مهمة", colorClass: "tag-task" };
+    var kindMeta = S.getCategoryMeta ? S.getCategoryMeta(item.kind) : (T.KINDS[item.kind] || { label: "مهمة", colorClass: "tag-task", color: "#1f6355" });
+
+    var tagStyle = "";
+    if (kindMeta.color) {
+      var tagBg = U.hexToRgba(kindMeta.color, 0.12);
+      var tagBorder = U.hexToRgba(kindMeta.color, 0.28);
+      tagStyle = 'style="background-color: ' + tagBg + '; color: ' + kindMeta.color + '; border-color: ' + tagBorder + ';"';
+    }
 
     var checkHtml = isProjMilestone
       ? '<div class="delivery-bullet" title="موعد تسليم مشروع">' + getIconSvg("flag") + '</div>'
@@ -67,7 +74,7 @@
       phoneHtml,
       '    </div>',
       '  </div>',
-      '  <span class="tag ' + kindMeta.colorClass + '">' + kindMeta.label + '</span>',
+      '  <span class="tag ' + (kindMeta.colorClass || "") + '" ' + tagStyle + '>' + U.escapeHtml(kindMeta.label) + '</span>',
       actionsHtml,
       '</div>'
     ].join("");
@@ -82,23 +89,56 @@
 
     var allItems = S.getUnifiedItems({ kind: activeFilter, query: searchQuery });
     var baseItems = S.getUnifiedItems({ query: searchQuery });
+    var categories = S.getCategories ? S.getCategories() : [];
 
     var chipCounts = { all: baseItems.length };
-    for (var key in T.KINDS) {
-      if (T.KINDS.hasOwnProperty(key) && key !== "all") {
-        chipCounts[key] = baseItems.filter(function (i) { return i.kind === key; }).length;
+    for (var b = 0; b < baseItems.length; b++) {
+      var itemKind = baseItems[b].kind || "task";
+      chipCounts[itemKind] = (chipCounts[itemKind] || 0) + 1;
+    }
+
+    // Only render categories that have actual items (value > 0) or are currently active
+    var visibleCategories = categories.filter(function (cat) {
+      return (chipCounts[cat.id] || 0) > 0 || activeFilter === cat.id;
+    });
+
+    // Check if there are other kinds in baseItems not in categories (e.g., delivery or legacy)
+    var catIds = categories.map(function (c) { return c.id; });
+    for (var kindKey in chipCounts) {
+      if (chipCounts.hasOwnProperty(kindKey) && kindKey !== "all" && catIds.indexOf(kindKey) === -1 && chipCounts[kindKey] > 0) {
+        var meta = S.getCategoryMeta(kindKey);
+        visibleCategories.push(meta);
       }
     }
 
+    var chipsButtonsHtml = [
+      '<button class="chip-btn" data-filter="all" aria-pressed="' + (activeFilter === "all") + '">',
+      '  <span>الكل</span>',
+      '  <span class="chip-badge">' + (chipCounts.all || 0) + '</span>',
+      '</button>'
+    ].concat(visibleCategories.map(function (cat) {
+      var count = chipCounts[cat.id] || 0;
+      var dotStyle = cat.color ? 'style="background-color:' + cat.color + ';"' : "";
+      return '<button class="chip-btn" data-filter="' + cat.id + '" aria-pressed="' + (activeFilter === cat.id) + '">' +
+        '<span class="chip-dot" ' + dotStyle + '></span>' +
+        '<span>' + U.escapeHtml(cat.label) + '</span>' +
+        '<span class="chip-badge">' + count + '</span>' +
+        '</button>';
+    })).join("");
+
+    var quickAddOptionsHtml = categories.map(function (c) {
+      return '<option value="' + c.id + '">' + U.escapeHtml(c.label) + '</option>';
+    }).join("");
+
     var chipsHtml = [
-      '<div class="chips-wrapper" role="toolbar" aria-label="تصنيفات المهام">',
-      Object.keys(T.KINDS).map(function (k) {
-        var meta = T.KINDS[k];
-        return '<button class="chip-btn" data-filter="' + k + '" aria-pressed="' + (activeFilter === k) + '">' +
-          '<span>' + meta.label + '</span>' +
-          '<span class="chip-badge">' + (chipCounts[k] || 0) + '</span>' +
-          '</button>';
-      }).join(""),
+      '<div class="chips-bar-container">',
+      '  <div class="chips-wrapper" role="toolbar" aria-label="تصنيفات المهام">',
+      chipsButtonsHtml,
+      '  </div>',
+      '  <button class="chip-manage-btn" id="openCategoryManagerBtn" title="إدارة وإضافة الأقسام والتصنيفات" aria-label="إدارة التصنيفات">',
+      '    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+      '    <span>إدارة الأقسام</span>',
+      '  </button>',
       '</div>',
       '<form class="quick-add-bar" id="quickAddForm" autocomplete="off">',
       '  <span class="quick-add-icon" title="إضافة سريعة">',
@@ -106,11 +146,7 @@
       '  </span>',
       '  <input type="text" id="quickAddInput" class="quick-add-input" placeholder="إضافة سريعة... اكتب المهمة واضغط Enter مباشرة" required>',
       '  <select id="quickAddKind" class="quick-add-select" aria-label="نوع المهمة">',
-      '    <option value="task">مهمة عامة</option>',
-      '    <option value="appt">قياسات وموعد</option>',
-      '    <option value="design">تجهيز التصميم</option>',
-      '    <option value="invoice">الفواتير</option>',
-      '    <option value="contact">تواصل</option>',
+      quickAddOptionsHtml,
       '  </select>',
       '  <button type="submit" class="quick-add-submit"><span>إضافة</span></button>',
       '</form>'

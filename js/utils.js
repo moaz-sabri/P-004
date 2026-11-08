@@ -92,6 +92,22 @@
     URL.revokeObjectURL(url);
   }
 
+  function hexToRgba(hex, alpha) {
+    if (!hex || typeof hex !== "string") return "";
+    var cleanHex = hex.replace("#", "").trim();
+    if (cleanHex.length === 3) {
+      cleanHex = cleanHex.split("").map(function (c) { return c + c; }).join("");
+    }
+    if (cleanHex.length !== 6) return "";
+    var num = parseInt(cleanHex, 16);
+    if (isNaN(num)) return "";
+    var r = (num >> 16) & 255;
+    var g = (num >> 8) & 255;
+    var b = num & 255;
+    var a = alpha !== undefined ? alpha : 1;
+    return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
+  }
+
   global.StudioUtils = {
     escapeHtml: escapeHtml,
     generateId: generateId,
@@ -101,6 +117,7 @@
     formatDateArabic: formatDateArabic,
     getRelativeDateHeading: getRelativeDateHeading,
     debounce: debounce,
-    downloadJsonFile: downloadJsonFile
+    downloadJsonFile: downloadJsonFile,
+    hexToRgba: hexToRgba
   };
 })(window);

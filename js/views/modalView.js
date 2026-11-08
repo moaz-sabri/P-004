@@ -10,6 +10,8 @@
   function ModalManager() {
     this.editItemId = null;
     this.confirmCallback = null;
+    this.selectedColor = "#1f6355";
+    this.editingCategoryId = null;
   }
 
   ModalManager.prototype.showToast = function (message, type, duration) {
@@ -74,11 +76,20 @@
     }
 
     if (kindSelect) {
-      kindSelect.innerHTML = Object.keys(T.KINDS)
-        .filter(function (k) { return k !== "all" && k !== "delivery"; })
-        .map(function (k) {
-          return '<option value="' + k + '">' + T.KINDS[k].label + '</option>';
+      var categories = S.getCategories ? S.getCategories() : [];
+      var currentKind = item ? item.kind : (prefillKind || "task");
+      var html = categories
+        .filter(function (c) { return c.id !== "all"; })
+        .map(function (c) {
+          return '<option value="' + c.id + '"' + (c.id === currentKind ? ' selected' : '') + '>' + U.escapeHtml(c.label) + '</option>';
         }).join("");
+
+      var hasCurrent = categories.some(function (c) { return c.id === currentKind; });
+      if (!hasCurrent && currentKind && currentKind !== "all") {
+        var meta = S.getCategoryMeta(currentKind);
+        html = '<option value="' + currentKind + '" selected>' + U.escapeHtml(meta.label) + '</option>' + html;
+      }
+      kindSelect.innerHTML = html;
     }
 
     var titleInp = document.getElementById("taskTitle");
@@ -286,6 +297,239 @@
       }
     };
     reader.readAsText(file);
+  };
+
+  ModalManager.prototype.openCategoryManagerModal = function (editCatId) {
+    var dialog = document.getElementById("categoryManagerDialog");
+    if (!dialog) return;
+
+    this.renderCategorySwatches();
+    this.renderCategoryList();
+
+    if (editCatId) {
+      this.editCategory(editCatId);
+    } else {
+      this.cancelEditCategory();
+    }
+
+    dialog.showModal();
+  };
+
+  ModalManager.prototype.renderCategorySwatches = function () {
+    var swatchesContainer = document.getElementById("catColorSwatches");
+    if (!swatchesContainer) return;
+
+    var colors = (T.CATEGORY_COLORS && T.CATEGORY_COLORS.length > 0)
+      ? T.CATEGORY_COLORS
+      : [
+        { name: "أخضر استوديو", hex: "#1f6355" },
+        { name: "أزرق ملكي", hex: "#2563eb" },
+        { name: "سماوي حديث", hex: "#0284c7" },
+        { name: "زمردي طبيعي", hex: "#16a34a" },
+        { name: "كهرماني دافئ", hex: "#d97706" },
+        { name: "نحاسي فاخر", hex: "#966a24" },
+        { name: "بنفسجي إبداعي", hex: "#7c3aed" },
+        { name: "وردي توتي", hex: "#e11d48" },
+        { name: "مرجاني حيوي", hex: "#ea580c" },
+        { name: "رمادي داكن", hex: "#475569" }
+      ];
+
+    var self = this;
+    swatchesContainer.innerHTML = colors.map(function (c) {
+      var isSelected = self.selectedColor.toLowerCase() === c.hex.toLowerCase();
+      return '<button type="button" class="color-swatch-btn ' + (isSelected ? "is-selected" : "") + '" data-color="' + c.hex + '" style="background-color:' + c.hex + ';" title="' + c.name + '"></button>';
+    }).join("");
+  };
+
+  ModalManager.prototype.selectCategoryColor = function (hex) {
+    if (!hex) return;
+    this.selectedColor = hex;
+    var swatches = document.querySelectorAll("#catColorSwatches .color-swatch-btn");
+    for (var i = 0; i < swatches.length; i++) {
+      var btnHex = swatches[i].getAttribute("data-color");
+      if (btnHex && btnHex.toLowerCase() === hex.toLowerCase()) {
+        swatches[i].classList.add("is-selected");
+      } else {
+        swatches[i].classList.remove("is-selected");
+      }
+    }
+    var customPicker = document.getElementById("catCustomColor");
+    if (customPicker) {
+      customPicker.value = hex;
+    }
+  };
+
+  ModalManager.prototype.renderCategoryList = function () {
+    var listContainer = document.getElementById("catItemsList");
+    if (!listContainer) return;
+
+    var S = global.StudioStore;
+    var categories = S.getCategories ? S.getCategories() : [];
+    var allItems = S.getItems();
+
+    if (categories.length === 0) {
+      listContainer.innerHTML = '<div style="text-align:center; padding:16px; color:var(--ink-muted); font-size:0.88rem;">لا توجد تصنيفات حالياً. يمكنك إضافة تصنيف جديد أعلاه.</div>';
+      return;
+    }
+
+    listContainer.innerHTML = categories.map(function (cat) {
+      var count = allItems.filter(function (i) { return i.kind === cat.id; }).length;
+      var bg = U.hexToRgba(cat.color || "#1f6355", 0.12);
+      var border = U.hexToRgba(cat.color || "#1f6355", 0.28);
+      var isTaskDefault = cat.id === "task";
+
+      return [
+        '<div class="cat-item-card" data-cat-id="' + cat.id + '">',
+        '  <div class="cat-item-info">',
+        '    <span class="cat-item-badge" style="background-color:' + bg + '; color:' + (cat.color || "#1f6355") + '; border: 1px solid ' + border + ';">',
+        '      <span style="width:8px; height:8px; border-radius:50%; background-color:' + (cat.color || "#1f6355") + ';"></span>',
+        '      <span>' + U.escapeHtml(cat.label) + '</span>',
+        '    </span>',
+        '    <span class="cat-task-count">' + (count > 0 ? (count + " مهام") : "لا توجد مهام") + '</span>',
+        '  </div>',
+        '  <div class="cat-item-actions">',
+        '    <button type="button" class="task-action-btn" data-cat-action="edit" data-id="' + cat.id + '" title="تعديل التصنيف">',
+        '      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+        '    </button>',
+        isTaskDefault ? '' : [
+          '    <button type="button" class="task-action-btn btn-delete" data-cat-action="delete" data-id="' + cat.id + '" title="حذف التصنيف">',
+          '      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+          '    </button>'
+        ].join(""),
+        '  </div>',
+        '</div>'
+      ].join("");
+    }).join("");
+  };
+
+  ModalManager.prototype.editCategory = function (catId) {
+    var S = global.StudioStore;
+    var cat = S.getCategory(catId);
+    if (!cat) return;
+
+    this.editingCategoryId = catId;
+    var nameInp = document.getElementById("catNameInput");
+    if (nameInp) {
+      nameInp.value = cat.label;
+      nameInp.focus();
+    }
+
+    this.selectCategoryColor(cat.color || "#1f6355");
+
+    var submitBtn = document.getElementById("catSubmitBtn");
+    if (submitBtn) {
+      submitBtn.innerHTML = '<span>حفظ التعديل</span>';
+    }
+
+    var cancelBtn = document.getElementById("catCancelEditBtn");
+    if (cancelBtn) {
+      cancelBtn.style.display = "inline-flex";
+    }
+
+    var formTitle = document.getElementById("catFormTitle");
+    if (formTitle) {
+      formTitle.textContent = "تعديل التصنيف: " + cat.label;
+    }
+  };
+
+  ModalManager.prototype.cancelEditCategory = function () {
+    this.editingCategoryId = null;
+    var nameInp = document.getElementById("catNameInput");
+    if (nameInp) nameInp.value = "";
+
+    this.selectCategoryColor("#1f6355");
+
+    var submitBtn = document.getElementById("catSubmitBtn");
+    if (submitBtn) {
+      submitBtn.innerHTML = '<span>إضافة التصنيف</span>';
+    }
+
+    var cancelBtn = document.getElementById("catCancelEditBtn");
+    if (cancelBtn) {
+      cancelBtn.style.display = "none";
+    }
+
+    var formTitle = document.getElementById("catFormTitle");
+    if (formTitle) {
+      formTitle.textContent = "إضافة قسم أو تصنيف جديد";
+    }
+  };
+
+  ModalManager.prototype.saveCategoryFromForm = function () {
+    var nameInp = document.getElementById("catNameInput");
+    var label = nameInp ? nameInp.value.trim() : "";
+    if (!label) {
+      this.showToast("يرجى كتابة اسم التصنيف", "error");
+      if (nameInp) nameInp.focus();
+      return;
+    }
+
+    var S = global.StudioStore;
+    var color = this.selectedColor || "#1f6355";
+
+    if (this.editingCategoryId) {
+      S.updateCategory(this.editingCategoryId, { label: label, color: color });
+      this.showToast('تم تحديث تصنيف "' + label + '" بنجاح', "success");
+    } else {
+      S.addCategory({ label: label, color: color });
+      this.showToast('تمت إضافة تصنيف "' + label + '" بنجاح', "success");
+    }
+
+    this.cancelEditCategory();
+    this.renderCategoryList();
+    if (global.StudioApp && typeof global.StudioApp.render === "function") {
+      global.StudioApp.render();
+    }
+  };
+
+  ModalManager.prototype.deleteCategoryWithConfirm = function (catId) {
+    var S = global.StudioStore;
+    var cat = S.getCategory(catId);
+    if (!cat) return;
+
+    if (catId === "task") {
+      this.showToast("لا يمكن حذف التصنيف الأساسي (مهمة عامة)", "error");
+      return;
+    }
+
+    var self = this;
+    var count = S.getItems().filter(function (i) { return i.kind === catId; }).length;
+
+    var message = count > 0
+      ? 'هذا التصنيف يحتوي على (' + count + ') مهمة. سيتم تحويل هذه المهام تلقائياً إلى "مهمة عامة" وحذف التصنيف نهائياً. هل أنت متأكد؟'
+      : 'هل أنت متأكد من حذف تصنيف "' + cat.label + '"؟';
+
+    this.openConfirmModal({
+      title: "تأكيد حذف التصنيف",
+      message: message,
+      confirmText: "حذف التصنيف",
+      onConfirm: function () {
+        S.deleteCategory(catId, "task");
+        self.renderCategoryList();
+        self.showToast('تم حذف تصنيف "' + cat.label + '"', "info");
+        if (global.StudioApp && typeof global.StudioApp.render === "function") {
+          global.StudioApp.render();
+        }
+      }
+    });
+  };
+
+  ModalManager.prototype.resetCategoriesWithConfirm = function () {
+    var self = this;
+    this.openConfirmModal({
+      title: "استعادة التصنيفات الافتراضية",
+      message: "هل تريد استعادة قائمة التصنيفات الافتراضية المدمجة في النظام؟ لن يتم حذف أي من مهامك الحالية.",
+      confirmText: "استعادة الافتراضيات",
+      onConfirm: function () {
+        global.StudioStore.resetCategories();
+        self.cancelEditCategory();
+        self.renderCategoryList();
+        self.showToast("تمت استعادة التصنيفات الافتراضية", "success");
+        if (global.StudioApp && typeof global.StudioApp.render === "function") {
+          global.StudioApp.render();
+        }
+      }
+    });
   };
 
   global.StudioModalView = new ModalManager();

@@ -13,16 +13,40 @@
     { id: 3, key: "delivery", label: "تسليم" }
   ];
 
+  var DEFAULT_CATEGORIES = [
+    { id: "task", label: "مهمة عامة", color: "#1f6355", colorClass: "tag-task", isDefault: true },
+    { id: "appt", label: "قياسات وموعد", color: "#2563eb", colorClass: "tag-appt", isDefault: true },
+    { id: "design", label: "تجهيز التصميم", color: "#0284c7", colorClass: "tag-design", isDefault: true },
+    { id: "invoice", label: "الفواتير", color: "#16a34a", colorClass: "tag-invoice", isDefault: true },
+    { id: "approval", label: "موافقات وحجز مواد", color: "#d97706", colorClass: "tag-approval", isDefault: true },
+    { id: "exec", label: "تصاميم تنفيذية", color: "#7c3aed", colorClass: "tag-exec", isDefault: true },
+    { id: "contact", label: "تواصل", color: "#0d9488", colorClass: "tag-contact", isDefault: true },
+    { id: "delivery", label: "تسليم وتشطيب", color: "#b45309", colorClass: "tag-delivery", isDefault: true }
+  ];
+
+  var CATEGORY_COLORS = [
+    { name: "أخضر استوديو", hex: "#1f6355" },
+    { name: "أزرق ملكي", hex: "#2563eb" },
+    { name: "سماوي حديث", hex: "#0284c7" },
+    { name: "زمردي هادئ", hex: "#16a34a" },
+    { name: "كهرماني دافئ", hex: "#d97706" },
+    { name: "نحاسي فاخر", hex: "#966a24" },
+    { name: "بنفسجي إبداعي", hex: "#7c3aed" },
+    { name: "وردي توتي", hex: "#e11d48" },
+    { name: "مرجاني حيوي", hex: "#ea580c" },
+    { name: "رمادي داكن", hex: "#475569" }
+  ];
+
   var KINDS = {
-    all: { label: "الكل", colorClass: "" },
-    task: { label: "مهمة عامة", colorClass: "tag-task" },
-    appt: { label: "قياسات وموعد", colorClass: "tag-appt" },
-    design: { label: "تجهيز التصميم", colorClass: "tag-design" },
-    invoice: { label: "الفواتير", colorClass: "tag-invoice" },
-    approval: { label: "موافقات وحجز مواد", colorClass: "tag-approval" },
-    exec: { label: "تصاميم تنفيذية", colorClass: "tag-exec" },
-    contact: { label: "تواصل", colorClass: "tag-contact" },
-    delivery: { label: "تسليم وتشطيب", colorClass: "tag-delivery" }
+    all: { label: "الكل", colorClass: "", color: "#1f6355" },
+    task: { label: "مهمة عامة", colorClass: "tag-task", color: "#1f6355" },
+    appt: { label: "قياسات وموعد", colorClass: "tag-appt", color: "#2563eb" },
+    design: { label: "تجهيز التصميم", colorClass: "tag-design", color: "#0284c7" },
+    invoice: { label: "الفواتير", colorClass: "tag-invoice", color: "#16a34a" },
+    approval: { label: "موافقات وحجز مواد", colorClass: "tag-approval", color: "#d97706" },
+    exec: { label: "تصاميم تنفيذية", colorClass: "tag-exec", color: "#7c3aed" },
+    contact: { label: "تواصل", colorClass: "tag-contact", color: "#0d9488" },
+    delivery: { label: "تسليم وتشطيب", colorClass: "tag-delivery", color: "#b45309" }
   };
 
   var PROJECT_TASK_TEMPLATES = [
@@ -98,13 +122,16 @@
           phone: "",
           done: false
         }
-      ]
+      ],
+      categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES))
     };
   }
 
   global.StudioTemplates = {
     PHASES: PHASES,
     KINDS: KINDS,
+    DEFAULT_CATEGORIES: DEFAULT_CATEGORIES,
+    CATEGORY_COLORS: CATEGORY_COLORS,
     PROJECT_TASK_TEMPLATES: PROJECT_TASK_TEMPLATES,
     getInitialSeedData: getInitialSeedData
   };

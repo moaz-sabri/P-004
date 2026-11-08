@@ -395,6 +395,65 @@
         var dialog = closeBtn.closest("dialog");
         if (dialog) dialog.close();
       }
+
+      // Open Category Manager triggers
+      var catOpenTrigger = e.target.closest("#openCategoryManagerBtn, #settingsOpenCategoryManagerBtn, #taskModalAddCategoryBtn, [data-action='open-category-manager']");
+      if (catOpenTrigger) {
+        M.openCategoryManagerModal();
+        return;
+      }
+
+      // Category color swatch selection
+      var swatchBtn = e.target.closest(".color-swatch-btn");
+      if (swatchBtn && swatchBtn.closest("#catColorSwatches")) {
+        var color = swatchBtn.getAttribute("data-color");
+        if (color) {
+          M.selectCategoryColor(color);
+        }
+        return;
+      }
+
+      // Submit category form
+      if (e.target.closest("#catSubmitBtn")) {
+        M.saveCategoryFromForm();
+        return;
+      }
+
+      // Cancel category edit
+      if (e.target.closest("#catCancelEditBtn")) {
+        M.cancelEditCategory();
+        return;
+      }
+
+      // Edit category row
+      var editCatBtn = e.target.closest('[data-cat-action="edit"]');
+      if (editCatBtn) {
+        var catId = editCatBtn.getAttribute("data-id");
+        M.editCategory(catId);
+        return;
+      }
+
+      // Delete category row
+      var deleteCatBtn = e.target.closest('[data-cat-action="delete"]');
+      if (deleteCatBtn) {
+        var delCatId = deleteCatBtn.getAttribute("data-id");
+        M.deleteCategoryWithConfirm(delCatId);
+        return;
+      }
+
+      // Restore default categories
+      if (e.target.closest("#catRestoreDefaultsBtn")) {
+        M.resetCategoriesWithConfirm();
+        return;
+      }
+    });
+
+    // Enter key submit on category name input
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && e.target && e.target.id === "catNameInput") {
+        e.preventDefault();
+        M.saveCategoryFromForm();
+      }
     });
 
     // Delegated events for View Container

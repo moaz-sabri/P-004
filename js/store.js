@@ -19,7 +19,12 @@
     try {
       var savedV2 = localStorage.getItem(STORAGE_KEY);
       if (savedV2) {
-        return JSON.parse(savedV2);
+        var state = JSON.parse(savedV2);
+        if (!state.categories || !Array.isArray(state.categories) || state.categories.length === 0) {
+          state.categories = JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []));
+          this._saveToStorage(state);
+        }
+        return state;
       }
 
       var savedV1 = localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -29,7 +34,8 @@
           version: 2,
           theme: "auto",
           projects: Array.isArray(v1Data.projects) ? v1Data.projects : [],
-          items: Array.isArray(v1Data.items) ? v1Data.items : []
+          items: Array.isArray(v1Data.items) ? v1Data.items : [],
+          categories: JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []))
         };
         this._saveToStorage(migrated);
         return migrated;
@@ -300,6 +306,120 @@
     return { total: total, completed: completed, percentage: percentage, open: open };
   };
 
+  Store.prototype.getCategories = function () {
+    if (!this.state.categories || !Array.isArray(this.state.categories) || this.state.categories.length === 0) {
+      this.state.categories = JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []));
+    }
+    return this.state.categories.slice();
+  };
+
+  Store.prototype.getCategory = function (id) {
+    var cats = this.getCategories();
+    for (var i = 0; i < cats.length; i++) {
+      if (cats[i].id === id) return cats[i];
+    }
+    return null;
+  };
+
+  Store.prototype.getCategoryMeta = function (id) {
+    if (id === "all") {
+      return { id: "all", label: "الكل", color: "#1f6355", colorClass: "" };
+    }
+    var cat = this.getCategory(id);
+    if (cat) {
+      return {
+        id: cat.id,
+        label: cat.label,
+        color: cat.color || "#1f6355",
+        colorClass: cat.colorClass || "tag-custom"
+      };
+    }
+    if (id === "delivery") {
+      return { id: "delivery", label: "تسليم وتشطيب", color: "#b45309", colorClass: "tag-delivery" };
+    }
+    if (T.KINDS && T.KINDS[id]) {
+      return {
+        id: id,
+        label: T.KINDS[id].label,
+        color: T.KINDS[id].color || "#1f6355",
+        colorClass: T.KINDS[id].colorClass || "tag-task"
+      };
+    }
+    return {
+      id: id,
+      label: id || "مهمة",
+      color: "#1f6355",
+      colorClass: "tag-task"
+    };
+  };
+
+  Store.prototype.addCategory = function (params) {
+    params = params || {};
+    var label = (params.label || "").trim();
+    if (!label) return null;
+
+    var id = (params.id || "").trim();
+    if (!id) {
+      id = "cat_" + U.generateId();
+    }
+    if (this.getCategory(id)) {
+      id = "cat_" + U.generateId();
+    }
+
+    var color = params.color || "#1f6355";
+    var newCat = {
+      id: id,
+      label: label,
+      color: color,
+      colorClass: "tag-custom",
+      isDefault: false
+    };
+
+    if (!this.state.categories || !Array.isArray(this.state.categories)) {
+      this.state.categories = JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []));
+    }
+
+    this.state.categories.push(newCat);
+    this._notify();
+    return newCat;
+  };
+
+  Store.prototype.updateCategory = function (id, updates) {
+    var cat = this.getCategory(id);
+    if (!cat) return null;
+
+    if (updates.label !== undefined && updates.label.trim()) {
+      cat.label = updates.label.trim();
+    }
+    if (updates.color !== undefined && updates.color) {
+      cat.color = updates.color;
+    }
+
+    this._notify();
+    return cat;
+  };
+
+  Store.prototype.deleteCategory = function (id, reassignTo) {
+    reassignTo = reassignTo || "task";
+    var list = this.state.items || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].kind === id) {
+        list[i].kind = reassignTo;
+      }
+    }
+
+    this.state.categories = (this.state.categories || []).filter(function (c) {
+      return c.id !== id;
+    });
+
+    this._notify();
+  };
+
+  Store.prototype.resetCategories = function () {
+    this.state.categories = JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []));
+    this._notify();
+  };
+
   Store.prototype.exportData = function () {
     return JSON.stringify(this.state, null, 2);
   };
@@ -314,7 +434,8 @@
         version: 2,
         theme: parsed.theme || "auto",
         projects: parsed.projects,
-        items: parsed.items
+        items: parsed.items,
+        categories: Array.isArray(parsed.categories) ? parsed.categories : JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []))
       };
       this._notify();
       return { success: true };
