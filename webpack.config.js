@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -21,12 +22,18 @@ const SCRIPTS = [
   "./js/app.js",
 ];
 
-const PAGES = [
-  { name: "index", template: "./src/index.html" },
-  { name: "projects", template: "./src/projects.html" },
-  { name: "clients", template: "./src/clients.html" },
-  { name: "settings", template: "./src/settings.html" },
-];
+// Discover every HTML template in src/ so any .html file is built and
+// injected with the bundled assets automatically, without having to register
+// it in a manual routing/page list.
+const SRC_DIR = path.resolve(__dirname, "src");
+const PAGES = fs
+  .readdirSync(SRC_DIR)
+  .filter((file) => file.toLowerCase().endsWith(".html"))
+  .sort()
+  .map((file) => ({
+    name: path.basename(file, ".html"),
+    template: path.join(SRC_DIR, file),
+  }));
 
 module.exports = (env, argv) => {
   const isProd = argv.mode === "production";
@@ -101,7 +108,11 @@ module.exports = (env, argv) => {
       filename: `js/[name].[contenthash:12].${revisionSuffix}.js`,
       chunkFilename: `js/[name].[contenthash:12].${revisionSuffix}.js`,
       assetModuleFilename: "assets/[hash][ext][query]",
-      clean: true,
+      clean: {
+        // Keep hand-dropped / unregistered HTML files so they can still be
+        // opened directly, while stale hashed JS/CSS are still removed.
+        keep: (assetPath) => /\.html$/i.test(assetPath),
+      },
       publicPath: "./",
     },
     module: {

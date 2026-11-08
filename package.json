@@ -5,6 +5,7 @@
   "description": "مفكرة الاستوديو - Studio Planner (Webpack bundled build)",
   "scripts": {
     "build": "webpack --config webpack.config.js --mode production",
+    "postbuild": "node ./copy-dist.js",
     "dev": "webpack --config webpack.config.js --mode development --watch",
     "start": "webpack serve --config webpack.config.js --mode development"
   },

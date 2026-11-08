@@ -84,7 +84,7 @@ npm run build
 
 الخرج في `dist/`. تم دمج كل سكربتات JS والأنماط CSS في ملف واحد لكل صفحة (`main.<hash>.<build>.js` و `main.<hash>.<build>.css`)، مع تشويش الكود، وإصدارات (hash + رقم بناء) تتغير عند كل build.
 
-ملاحظة: pages are now single-sourced in `src/*.html` (root .html removed). Build output `dist/*.html` is the runnable bundle. `sw.js` precaches only stable assets/pages; hashed JS/CSS are cached on first network fetch.
+ملاحظة: pages are now single-sourced in `src/*.html` (root .html removed). Build output `dist/*.html` is the runnable bundle, and `npm run build` also mirrors it to the project root (`/index.html`) so direct root URLs work. `sw.js` precaches only stable assets/pages; hashed JS/CSS are cached on first network fetch. Adding any `src/*.html` page is picked up automatically.
 
 ---
 
