@@ -75,6 +75,19 @@ P-004/
 
 ---
 
+## 📦 بناء Webpack (حزمة واحدة مع تشفير/تشويش وإصدارات جديدة)
+
+```bash
+npm install
+npm run build
+```
+
+الخرج في `dist/`. تم دمج كل سكربتات JS والأنماط CSS في ملف واحد لكل صفحة (`main.<hash>.<build>.js` و `main.<hash>.<build>.css`)، مع تشويش الكود، وإصدارات (hash + رقم بناء) تتغير عند كل build.
+
+ملاحظة: pages are now single-sourced in `src/*.html` (root .html removed). Build output `dist/*.html` is the runnable bundle. `sw.js` precaches only stable assets/pages; hashed JS/CSS are cached on first network fetch.
+
+---
+
 ## ⌨️ اختصارات لوحة المفاتيح
 - اضغط `/` للبحث السريع.
 - اضغط `N` لفتح وإغلاق القائمة العائمة للإضافة السريعة.

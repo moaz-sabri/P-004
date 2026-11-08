@@ -1,0 +1,9 @@
+# Dependencies
+node_modules/
+
+# Webpack build output
+dist/
+
+# Logs
+npm-debug.log*
+*.log
