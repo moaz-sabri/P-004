@@ -3,23 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="إعدادات النظام والنسخ الاحتياطي - إدارة التنبيهات، المظهر، وحفظ واستعادة البيانات محلياً">
+  <meta name="description" content="لوحة المشاريع والكانبان - متابعة مراحل التصميم، التنفيذ، والتسليم">
   <meta name="theme-color" content="#1f6355">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="مفكرة الاستوديو">
   
-  <title>إعدادات النظام والنسخ | مفكرة الاستوديو</title>
+  <title>لوحة المشاريع (Kanban) | مفكرة الاستوديو</title>
 
   <!-- PWA Manifest & Icons -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-  <!-- Modular Stylesheets (100% Offline Compatible) -->
-  <link rel="stylesheet" href="css/main.css">
-</head>
-<body data-page="settings">
+  </head>
+<body data-page="projects">
 
   <main class="app-container">
     <!-- App Header -->
@@ -27,10 +25,11 @@
       <div class="brand-section">
         <h1 class="brand-title">
           <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            <polygon points="12 2 2 7 12 12 22 7 12 22 12 12 2 7"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
           </svg>
-          <span>إعدادات النظام والنسخ الاحتياطي</span>
+          <span>لوحة المشاريع والمراحل</span>
         </h1>
         <p class="brand-date" id="todayDate">...</p>
       </div>
@@ -40,6 +39,16 @@
 
       <!-- Header Actions -->
       <div class="header-actions">
+        <!-- PWA Install Button -->
+        <button class="btn-install" id="installAppBtn" title="تثبيت التطبيق على جهازك للعمل بدون إنترنت">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          <span>تثبيت التطبيق</span>
+        </button>
+
         <!-- Notification Bell & Badge -->
         <button class="btn-icon btn-notification" id="notifBtn" title="مركز الإشعارات والتنبيهات" aria-label="الإشعارات">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -71,7 +80,7 @@
         <span>الأجندة والمواعيد</span>
       </a>
 
-      <a href="projects.html" class="nav-tab" aria-current="false">
+      <a href="projects.html" class="nav-tab" aria-current="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="12 2 2 7 12 12 22 7 12 22 12 12 2 7"/>
           <polyline points="2 17 12 22 22 17"/>
@@ -80,7 +89,7 @@
         <span>لوحة المشاريع (Kanban)</span>
       </a>
 
-      <a href="settings.html" class="nav-tab" aria-current="true">
+      <a href="settings.html" class="nav-tab" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -89,97 +98,88 @@
       </a>
     </nav>
 
-    <!-- Settings Sections Grid -->
-    <div class="settings-grid">
-      <!-- Card 1: Theme & Display -->
-      <section class="setting-card">
-        <h3 class="setting-card-title">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"/>
-            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+    <!-- Project Controls & Search -->
+    <div class="toolbar-section">
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <div class="search-box" style="flex:1; min-width: 220px;">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <span>المظهر والثيم البصري</span>
-        </h3>
-        <p class="setting-card-desc">اختر المظهر المريح لعينيك خلال العمل؛ يمكنك التبديل بين الوضع الليلي، النهاري، أو المزامنة التلقائية مع إعدادات نظام جهازك.</p>
-        <div class="setting-action-row">
-          <button class="btn btn-secondary btn-sm" id="setThemeLight">☀️ الوضع النهاري</button>
-          <button class="btn btn-secondary btn-sm" id="setThemeDark">🌙 الوضع الليلي</button>
-          <button class="btn btn-secondary btn-sm" id="setThemeAuto">💻 تلقائي حسب النظام</button>
+          <input 
+            type="search" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="ابحث عن اسم مشروع أو عميل..."
+            autocomplete="off"
+          >
+          <button id="searchClear" class="search-clear" title="مسح البحث">×</button>
+          <span class="search-kbd"><kbd class="kbd-hint">/</kbd></span>
         </div>
-      </section>
 
-      <!-- Card 2: Notifications & Sound -->
-      <section class="setting-card">
-        <h3 class="setting-card-title">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        <button class="btn" id="newProjectTopBtn" onclick="StudioModalView.openProjectModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          <span>التنبيهات ونغمات الاستوديو</span>
-        </h3>
-        <p class="setting-card-desc">نظام تنبيهات محلي يرسل إشعارات بالمواعيد المجدولة لليوم ويشغل نغمة استوديو هادئة ومريحة مولدة تقنياً دون اتصال بالإنترنت.</p>
-        <div class="setting-action-row">
-          <button class="btn btn-sm" id="requestPermBtn">تفعيل إشعارات سطح المكتب</button>
-          <button class="btn btn-secondary btn-sm" id="testChimeBtn">🔊 اختبار نغمة التنبيه</button>
-          <button class="btn btn-secondary btn-sm" id="testNotifBtn">🔔 إرسال إشعار تجريبي</button>
-        </div>
-      </section>
-
-      <!-- Card 3: Task Categories & Classifications -->
-      <section class="setting-card">
-        <h3 class="setting-card-title">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 9h16"/><path d="M4 15h16"/><path d="M10 3L8 21"/><path d="M16 3l-2 18"/>
-          </svg>
-          <span>إدارة تصنيفات وأقسام المهام</span>
-        </h3>
-        <p class="setting-card-desc">خصص أقسامك الخاصة (مهمة عامة، مواعيد، فواتير، مشتريات...) مع إمكانية تعديل الألوان، إضافة أقسام جديدة، أو حذف الأقسام غير المستخدمة لتنظيم الأجندة باحترافية.</p>
-        <div class="setting-action-row">
-          <button class="btn btn-sm" id="settingsOpenCategoryManagerBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            <span>إدارة وتعديل التصنيفات والأقسام</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- Card 4: Backup & Restore -->
-      <section class="setting-card">
-        <h3 class="setting-card-title">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          <span>النسخ الاحتياطي وحماية البيانات</span>
-        </h3>
-        <p class="setting-card-desc">احفظ نسخة من جميع مشاريعك ومهامك في ملف JSON على جهازك، أو استرجع نسخة سابقة بأي وقت لضمان عدم ضياع أي بيانات.</p>
-        <div class="setting-action-row">
-          <button class="btn btn-secondary btn-sm" id="exportDataBtn">
-            <span>💾 تصدير نسخة احتياطية (JSON)</span>
-          </button>
-          <label for="importDataInput" class="btn btn-secondary btn-sm" style="cursor:pointer; display:inline-flex;">
-            <span>📂 استيراد نسخة سابقة</span>
-          </label>
-          <input type="file" id="importDataInput" accept=".json,application/json" class="sr-only">
-        </div>
-      </section>
-
-      <!-- Card 4: Factory Reset & System Info -->
-      <section class="setting-card">
-        <h3 class="setting-card-title" style="color:var(--color-late);">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-          </svg>
-          <span>إعادة ضبط البيانات</span>
-        </h3>
-        <p class="setting-card-desc">يمكنك استعادة بيانات الاستوديو التجريبية الافتراضية للبدء من جديد. يرجى أخذ نسخة احتياطية أولاً إذا أردت الاحتفاظ بمشاريعك الحالية.</p>
-        <div class="setting-action-row">
-          <button class="btn btn-danger btn-sm" id="resetDataBtn">⚠️ استعادة البيانات الافتراضية</button>
-        </div>
-      </section>
+          <span>مشروع جديد</span>
+        </button>
+      </div>
     </div>
+
+    <!-- Active View Dynamic Content -->
+    <div id="viewContainer"></div>
   </main>
+
+  <!-- Floating Speed-Dial Quick-Add Menu -->
+  <div class="speed-dial-container" id="speedDialContainer">
+    <div class="speed-dial-menu" role="menu" aria-label="قائمة الإضافة السريعة">
+      <button class="speed-dial-item" data-quick-action="project">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 2 7 12 12 22 7 12 22 12 12 2 7"/>
+          <polyline points="2 17 12 22 22 17"/>
+        </svg>
+        <span>مشروع جديد</span>
+      </button>
+
+      <button class="speed-dial-item" data-quick-action="invoice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+        <span>فاتورة أو دفعة مالية</span>
+      </button>
+
+      <button class="speed-dial-item" data-quick-action="design">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+        <span>تجهيز تصميم ومود بورد</span>
+      </button>
+
+      <button class="speed-dial-item" data-quick-action="appt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        <span>موعد وقياسات موقع</span>
+      </button>
+
+      <button class="speed-dial-item" data-quick-action="task">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span>مهمة عامة أو اتصال</span>
+      </button>
+    </div>
+
+    <button class="speed-dial-trigger" id="speedDialTrigger" title="قائمة الإضافة السريعة (اضغط N)" aria-label="إضافة سريعة">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+  </div>
+  <div class="speed-dial-backdrop" id="speedDialBackdrop"></div>
 
   <!-- Notification Center Dialog -->
   <dialog id="notificationDialog">
@@ -191,8 +191,9 @@
       <div id="notifStatusText" style="margin-bottom: 12px; font-size: 0.92rem;"></div>
       
       <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;">
-        <button class="btn btn-secondary btn-sm" onclick="StudioNotifications.playChime()">🔊 اختبار النغمة</button>
-        <button class="btn btn-secondary btn-sm" onclick="StudioNotifications.testNotification()">🔔 تجربة إشعار</button>
+        <button class="btn btn-sm" id="requestPermBtn">تفعيل إشعارات سطح المكتب</button>
+        <button class="btn btn-secondary btn-sm" id="testChimeBtn">🔊 اختبار نغمة التنبيه</button>
+        <button class="btn btn-secondary btn-sm" id="testNotifBtn">🔔 إرسال إشعار تجريبي</button>
       </div>
 
       <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--ink-secondary);">المواعيد والمهام العاجلة:</h4>
@@ -346,15 +347,5 @@
     </div>
   </dialog>
 
-  <!-- Universal 100% Local Scripts -->
-  <script src="js/utils.js"></script>
-  <script src="js/templates.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/notificationManager.js"></script>
-  <script src="js/views/statsView.js"></script>
-  <script src="js/views/modalView.js"></script>
-  <script src="js/views/agendaView.js"></script>
-  <script src="js/views/kanbanView.js"></script>
-  <script src="js/app.js"></script>
-</body>
+  </body>
 </html>
