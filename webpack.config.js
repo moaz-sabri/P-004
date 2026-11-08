@@ -17,12 +17,14 @@ const SCRIPTS = [
   "./js/views/modalView.js",
   "./js/views/agendaView.js",
   "./js/views/kanbanView.js",
+  "./js/views/clientsView.js",
   "./js/app.js",
 ];
 
 const PAGES = [
   { name: "index", template: "./src/index.html" },
   { name: "projects", template: "./src/projects.html" },
+  { name: "clients", template: "./src/clients.html" },
   { name: "settings", template: "./src/settings.html" },
 ];
 

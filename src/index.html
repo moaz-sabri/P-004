@@ -89,6 +89,16 @@
         <span>لوحة المشاريع (Kanban)</span>
       </a>
 
+      <a href="clients.html" class="nav-tab" aria-current="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span>العملاء</span>
+      </a>
+
       <a href="settings.html" class="nav-tab" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
@@ -225,6 +235,13 @@
 
       <div class="form-row">
         <div class="form-group">
+          <label for="taskClient">العميل المرتبط (اختياري)</label>
+          <select id="taskClient" class="form-control"></select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
           <label for="taskWho">مع من؟ (عميل، مورد، جهة)</label>
           <input id="taskWho" class="form-control" placeholder="اسم الشخص أو الشركة">
         </div>
@@ -267,6 +284,10 @@
       <div class="form-group">
         <label for="projectClient">اسم العميل</label>
         <input id="projectClient" class="form-control" placeholder="مثال: أ. عبد الله / شركة الأفق">
+      </div>
+      <div class="form-group">
+        <label for="projectClientSelect">ربط بعميل (اختياري)</label>
+        <select id="projectClientSelect" class="form-control"></select>
       </div>
 
       <div class="form-group">

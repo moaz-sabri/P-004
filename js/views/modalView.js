@@ -51,7 +51,7 @@
     }, duration);
   };
 
-  ModalManager.prototype.openTaskModal = function (itemId, prefillProjectId, prefillKind) {
+  ModalManager.prototype.openTaskModal = function (itemId, prefillProjectId, prefillKind, prefillClientId) {
     var S = global.StudioStore;
     this.editItemId = itemId || null;
     var item = itemId ? S.getItem(itemId) : null;
@@ -75,6 +75,18 @@
         }).join("");
     }
 
+    var clientSelect = document.getElementById("taskClient");
+    if (clientSelect && S.getClients) {
+      var currentClient = item ? (item.cid || "") : (prefillClientId || "");
+
+
+      var clients = S.getClients();
+      clientSelect.innerHTML = '<option value="">بدون عميل</option>' +
+        clients.map(function (c) {
+          return '<option value="' + c.id + '"' + (c.id === currentClient ? ' selected' : '') + '>' + U.escapeHtml(c.name) + '</option>';
+        }).join("");
+      if (currentClient) clientSelect.value = currentClient;
+    }
     if (kindSelect) {
       var categories = S.getCategories ? S.getCategories() : [];
       var currentKind = item ? item.kind : (prefillKind || "task");
@@ -108,6 +120,14 @@
     if (phoneInp) phoneInp.value = item ? (item.phone || "") : "";
     if (projectInp) projectInp.value = item ? (item.pid || "") : (prefillProjectId || "");
 
+    if (!item && prefillClientId && global.StudioStore) {
+      var pc = global.StudioStore.getClient(prefillClientId);
+      if (pc) {
+        if (whoInp && !whoInp.value) whoInp.value = pc.name || "";
+        if (phoneInp && !phoneInp.value) phoneInp.value = pc.phone || "";
+      }
+    }
+
     dialog.showModal();
     if (titleInp) titleInp.focus();
   };
@@ -129,6 +149,7 @@
       date: document.getElementById("taskDate") && document.getElementById("taskDate").value ? document.getElementById("taskDate").value : U.getTodayIso(),
       time: document.getElementById("taskTime") ? document.getElementById("taskTime").value : "",
       pid: document.getElementById("taskProject") ? document.getElementById("taskProject").value : "",
+      cid: document.getElementById("taskClient") ? document.getElementById("taskClient").value : "",
       who: document.getElementById("taskWho") ? document.getElementById("taskWho").value.trim() : "",
       phone: document.getElementById("taskPhone") ? document.getElementById("taskPhone").value.trim() : ""
     };
@@ -153,11 +174,19 @@
 
     var nameInput = document.getElementById("projectName");
     var clientInput = document.getElementById("projectClient");
+    var clientSelect = document.getElementById("projectClientSelect");
     var dueInput = document.getElementById("projectDue");
     var autoTasksInput = document.getElementById("projectAutoTasks");
 
     if (nameInput) nameInput.value = "";
     if (clientInput) clientInput.value = "";
+    if (clientSelect && global.StudioStore && global.StudioStore.getClients) {
+      clientSelect.innerHTML = '<option value="">بدون عميل</option>' +
+        global.StudioStore.getClients().map(function (c) {
+          return '<option value="' + c.id + '">' + U.escapeHtml(c.name) + '</option>';
+        }).join("");
+      clientSelect.value = "";
+    }
     if (dueInput) dueInput.value = "";
     if (autoTasksInput) autoTasksInput.checked = true;
 
@@ -176,17 +205,206 @@
       return false;
     }
 
-    var client = document.getElementById("projectClient") ? document.getElementById("projectClient").value.trim() : "";
+    var clientText = document.getElementById("projectClient") ? document.getElementById("projectClient").value.trim() : "";
+    var clientSelect = document.getElementById("projectClientSelect");
+    var cid = clientSelect ? (clientSelect.value || "") : "";
+    var client = clientText;
+    if (cid) {
+      var c = S.getClient(cid);
+      if (c) client = c.name;
+    } else if (client) {
+      // try auto-link by name
+      var found = (S.getClients() || []).filter(function (cl) {
+        return (cl.name || "").toLowerCase() === client.toLowerCase();
+      })[0];
+      if (found) cid = found.id;
+    }
+
     var due = document.getElementById("projectDue") ? document.getElementById("projectDue").value : "";
     var generateTasks = document.getElementById("projectAutoTasks") ? document.getElementById("projectAutoTasks").checked : true;
 
-    S.addProject({ name: name, client: client, due: due, generateTasks: generateTasks });
+    S.addProject({ name: name, client: client, cid: cid, due: due, generateTasks: generateTasks });
     if (global.StudioNotifications) global.StudioNotifications.playChime();
     this.showToast('تم إنشاء مشروع "' + name + '" بنجاح', "success");
 
     var dialog = document.getElementById("projectDialog");
     if (dialog) dialog.close();
     return true;
+  };
+
+  ModalManager.prototype.openClientModal = function (clientId) {
+    var S = global.StudioStore;
+    var dialog = document.getElementById("clientDialog");
+    if (!dialog) return;
+    this.editingClientId = clientId || null;
+    var client = clientId ? S.getClient(clientId) : null;
+
+    var titleEl = document.getElementById("clientModalTitle");
+    if (titleEl) titleEl.textContent = client ? "تعديل بيانات العميل" : "إضافة عميل جديد";
+
+    var nameInp = document.getElementById("clientName");
+    var phoneInp = document.getElementById("clientPhone");
+    var emailInp = document.getElementById("clientEmail");
+    var companyInp = document.getElementById("clientCompany");
+
+    if (nameInp) nameInp.value = client ? (client.name || "") : "";
+    if (phoneInp) phoneInp.value = client ? (client.phone || "") : "";
+    if (emailInp) emailInp.value = client ? (client.email || "") : "";
+    if (companyInp) companyInp.value = client ? (client.company || "") : "";
+
+    dialog.showModal();
+    if (nameInp) nameInp.focus();
+  };
+
+  ModalManager.prototype.saveClient = function () {
+    var S = global.StudioStore;
+    var nameInp = document.getElementById("clientName");
+    var name = nameInp ? nameInp.value.trim() : "";
+    if (!name) {
+      this.showToast("يرجى إدخال اسم العميل", "error");
+      if (nameInp) nameInp.focus();
+      return false;
+    }
+
+    var payload = {
+      name: name,
+      phone: document.getElementById("clientPhone") ? document.getElementById("clientPhone").value.trim() : "",
+      email: document.getElementById("clientEmail") ? document.getElementById("clientEmail").value.trim() : "",
+      company: document.getElementById("clientCompany") ? document.getElementById("clientCompany").value.trim() : ""
+    };
+
+    if (this.editingClientId) {
+      S.updateClient(this.editingClientId, payload);
+      this.showToast('تم تحديث بيانات "' + name + '" بنجاح', "success");
+    } else {
+      S.addClient(payload);
+      if (global.StudioNotifications) global.StudioNotifications.playChime();
+      this.showToast('تم إضافة العميل "' + name + '" بنجاح', "success");
+    }
+
+    var dialog = document.getElementById("clientDialog");
+    if (dialog) dialog.close();
+    this.editingClientId = null;
+    return true;
+  };
+
+  ModalManager.prototype.openClientDetail = function (clientId) {
+    var S = global.StudioStore;
+    var T = global.StudioTemplates;
+    var client = S.getClient(clientId);
+    if (!client) return;
+    var dialog = document.getElementById("clientDetailDialog");
+    if (!dialog) return;
+
+    var tasks = S.getItemsForClient(client);
+    var projects = S.getProjectsForClient(client);
+    var notes = Array.isArray(client.notes) ? client.notes : [];
+
+    var content = document.getElementById("clientDetailContent");
+    if (!content) return;
+
+    var html = [];
+    html.push('<div class="modal-header">');
+    html.push('  <h3>ملف العميل: ' + U.escapeHtml(client.name) + '</h3>');
+    html.push('  <button class="btn-icon" data-dialog-close aria-label="إغلاق">✕</button>');
+    html.push('</div>');
+
+    html.push('<div style="margin-bottom:14px; color:var(--ink-secondary); font-size:0.9rem;">');
+    if (client.phone) html.push('  <div>📞 <span dir="ltr">' + U.escapeHtml(client.phone) + '</span></div>');
+    if (client.email) html.push('  <div>✉️ ' + U.escapeHtml(client.email) + '</div>');
+    if (client.company) html.push('  <div>🏢 ' + U.escapeHtml(client.company) + '</div>');
+    html.push('  <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">');
+    html.push('    <button class="btn btn-sm" onclick="StudioModalView.openClientModal(\'' + client.id + '\')">تعديل البيانات</button>');
+    html.push('    <button class="btn btn-secondary btn-sm" onclick="StudioModalView.openTaskModal(null,null,null,\'' + client.id + '\')">+ مهمة جديدة</button>');
+    html.push('  </div>');
+    html.push('</div>');
+
+    // Projects
+    html.push('<h4 style="margin:12px 0 6px; color:var(--ink-primary);">المشاريع (' + projects.length + ')</h4>');
+    if (projects.length === 0) {
+      html.push('<p style="color:var(--ink-muted); font-size:0.86rem;">لا توجد مشاريع مرتبط بهذا العميل.</p>');
+    } else {
+      html.push('<div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">');
+      for (var p = 0; p < projects.length; p++) {
+        var pr = projects[p];
+        html.push('  <div style="padding:8px 10px; background:var(--bg-app); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center;">');
+        html.push('    <span style="font-weight:600;">' + U.escapeHtml(pr.name) + '</span>');
+        html.push('    <span class="tag tag-task">' + U.escapeHtml((T.PHASES ? (T.PHASES[pr.phase] ? T.PHASES[pr.phase].label : "") : "")) + '</span>');
+        html.push('  </div>');
+      }
+      html.push('</div>');
+    }
+
+    // Tasks
+    html.push('<h4 style="margin:12px 0 6px; color:var(--ink-primary);">المهام والمواعيد (' + tasks.length + ')</h4>');
+    if (tasks.length === 0) {
+      html.push('<p style="color:var(--ink-muted); font-size:0.86rem;">لا توجد مهام مرتبطة بهذا العميل.</p>');
+    } else {
+      html.push('<div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px; max-height:200px; overflow-y:auto;">');
+      for (var t = 0; t < tasks.length; t++) {
+        var it = tasks[t];
+        html.push('  <div style="padding:8px 10px; background:var(--bg-app); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; font-size:0.86rem;">');
+        html.push('    <span style="' + (it.done ? "text-decoration:line-through; color:var(--ink-muted);" : "") + '">' + U.escapeHtml(it.title) + '</span>');
+        html.push('    <span style="color:var(--ink-muted);">' + (it.date || "") + '</span>');
+        html.push('  </div>');
+      }
+      html.push('</div>');
+    }
+
+    // Notes
+    html.push('<h4 style="margin:12px 0 6px; color:var(--ink-primary);">ملاحظات خاصة (' + notes.length + ')</h4>');
+    html.push('<div style="display:flex; gap:8px; margin-bottom:10px;">');
+    html.push('  <textarea id="clientNoteInput" class="form-control" placeholder="أضف ملاحظة جديدة..." style="min-height:60px;"></textarea>');
+    html.push('  <button class="btn btn-sm" style="align-self:flex-end;" onclick="StudioModalView.saveClientNote(\'' + client.id + '\')">إضافة</button>');
+    html.push('</div>');
+    if (notes.length === 0) {
+      html.push('<p style="color:var(--ink-muted); font-size:0.86rem;">لا توجد ملاحظات بعد.</p>');
+    } else {
+      html.push('<div style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto;">');
+      for (var n = 0; n < notes.length; n++) {
+        var note = notes[n];
+        var dateStr = note.date ? new Date(note.date).toLocaleDateString("ar-EG") : "";
+        html.push('  <div style="padding:10px; background:var(--bg-app); border-radius:var(--radius-sm); border-inline-start:3px solid var(--accent-primary);">');
+        html.push('    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">');
+        html.push('      <span style="font-size:0.75rem; color:var(--ink-muted);">' + U.escapeHtml(dateStr) + '</span>');
+        html.push('      <button class="task-action-btn btn-delete" onclick="StudioModalView.deleteClientNoteConfirm(\'' + client.id + '\',\'' + note.id + '\')" title="حذف">✕</button>');
+        html.push('    </div>');
+        html.push('    <div style="white-space:pre-wrap; font-size:0.9rem;">' + U.escapeHtml(note.text) + '</div>');
+        html.push('  </div>');
+      }
+      html.push('</div>');
+    }
+
+    content.innerHTML = html.join("");
+    dialog.showModal();
+  };
+
+  ModalManager.prototype.saveClientNote = function (clientId) {
+    var S = global.StudioStore;
+    var inp = document.getElementById("clientNoteInput");
+    var text = inp ? inp.value.trim() : "";
+    if (!text) {
+      this.showToast("يرجى كتابة ملاحظة", "error");
+      return;
+    }
+    S.addClientNote(clientId, text);
+    if (inp) inp.value = "";
+    this.showToast("تمت إضافة الملاحظة", "success");
+    this.openClientDetail(clientId);
+  };
+
+  ModalManager.prototype.deleteClientNoteConfirm = function (clientId, noteId) {
+    var self = this;
+    var S = global.StudioStore;
+    this.openConfirmModal({
+      title: "حذف الملاحظة",
+      message: "هل أنت متأكد من حذف هذه الملاحظة؟",
+      onConfirm: function () {
+        S.deleteClientNote(clientId, noteId);
+        self.showToast("تم حذف الملاحظة", "info");
+        self.openClientDetail(clientId);
+      }
+    });
   };
 
   ModalManager.prototype.openConfirmModal = function (params) {

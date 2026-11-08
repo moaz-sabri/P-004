@@ -24,6 +24,12 @@
           state.categories = JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []));
           this._saveToStorage(state);
         }
+        if (!Array.isArray(state.clients)) {
+          state.clients = [];
+          this._saveToStorage(state);
+        }
+        if (!Array.isArray(state.projects)) state.projects = [];
+        if (!Array.isArray(state.items)) state.items = [];
         return state;
       }
 
@@ -33,6 +39,7 @@
         var migrated = {
           version: 2,
           theme: "auto",
+          clients: [],
           projects: Array.isArray(v1Data.projects) ? v1Data.projects : [],
           items: Array.isArray(v1Data.items) ? v1Data.items : [],
           categories: JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []))
@@ -100,6 +107,7 @@
   Store.prototype.addProject = function (params) {
     var name = (params.name || "").trim();
     var client = (params.client || "").trim();
+    var cid = (params.cid || params.clientId || "").trim();
     var due = params.due || "";
     var generateTasks = params.generateTasks !== false;
 
@@ -107,6 +115,7 @@
       id: U.generateId(),
       name: name,
       client: client,
+      cid: cid,
       phase: 0,
       due: due
     };
@@ -127,6 +136,7 @@
           date: U.addDaysIso(offsetDays, today),
           time: "",
           pid: newProj.id,
+          cid: cid,
           who: newProj.client || "",
           phone: "",
           done: false
@@ -166,6 +176,122 @@
     this._notify();
   };
 
+  /* ---------------------------------------------------------------- clients */
+  Store.prototype.getClients = function () {
+    return (this.state.clients || []).slice().sort(function (a, b) {
+      return (a.name || "").localeCompare(b.name || "", "ar");
+    });
+  };
+
+  Store.prototype.getClient = function (id) {
+    var list = this.state.clients || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) return list[i];
+    }
+    return null;
+  };
+
+  Store.prototype.addClient = function (params) {
+    params = params || {};
+    var name = (params.name || "").trim();
+    if (!name) return null;
+
+    var newClient = {
+      id: U.generateId(),
+      name: name,
+      phone: (params.phone || "").trim(),
+      email: (params.email || "").trim(),
+      company: (params.company || "").trim(),
+      notes: Array.isArray(params.notes) ? params.notes.slice() : [],
+      createdAt: new Date().toISOString()
+    };
+
+    if (!this.state.clients || !Array.isArray(this.state.clients)) {
+      this.state.clients = [];
+    }
+    this.state.clients.push(newClient);
+    this._notify();
+    return newClient;
+  };
+
+  Store.prototype.updateClient = function (id, updates) {
+    var client = this.getClient(id);
+    if (!client) return null;
+    updates = updates || {};
+    for (var key in updates) {
+      if (updates.hasOwnProperty(key)) {
+        if (key === "name" || key === "phone" || key === "email" || key === "company") {
+          client[key] = (updates[key] || "").trim ? (updates[key] || "").trim() : updates[key];
+        } else {
+          client[key] = updates[key];
+        }
+      }
+    }
+    this._notify();
+    return client;
+  };
+
+  Store.prototype.deleteClient = function (id) {
+    var client = this.getClient(id);
+    if (!client) return;
+    this.state.clients = (this.state.clients || []).filter(function (c) { return c.id !== id; });
+    // unlink references
+    var items = this.state.items || [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].cid === id) items[i].cid = "";
+    }
+    var projects = this.state.projects || [];
+    for (var p = 0; p < projects.length; p++) {
+      if (projects[p].cid === id) projects[p].cid = "";
+    }
+    this._notify();
+  };
+
+  Store.prototype.addClientNote = function (clientId, text) {
+    var client = this.getClient(clientId);
+    if (!client) return null;
+    text = (text || "").trim();
+    if (!text) return null;
+    if (!Array.isArray(client.notes)) client.notes = [];
+    var note = {
+      id: U.generateId(),
+      text: text,
+      date: new Date().toISOString()
+    };
+    client.notes.unshift(note);
+    this._notify();
+    return note;
+  };
+
+  Store.prototype.deleteClientNote = function (clientId, noteId) {
+    var client = this.getClient(clientId);
+    if (!client || !Array.isArray(client.notes)) return;
+    client.notes = client.notes.filter(function (n) { return n.id !== noteId; });
+    this._notify();
+  };
+
+  Store.prototype.getItemsForClient = function (client) {
+    if (!client) return [];
+    var id = client.id;
+    var name = (client.name || "").toLowerCase();
+    return (this.state.items || []).filter(function (i) {
+      if (i.cid && i.cid === id) return true;
+      if ((!i.cid) && name && (i.who || "").toLowerCase() === name) return true;
+      return false;
+    });
+  };
+
+  Store.prototype.getProjectsForClient = function (client) {
+    if (!client) return [];
+    var id = client.id;
+    var name = (client.name || "").toLowerCase();
+    return (this.state.projects || []).filter(function (p) {
+      if (p.cid && p.cid === id) return true;
+      if ((!p.cid) && name && (p.client || "").toLowerCase() === name) return true;
+      return false;
+    });
+  };
+
   Store.prototype.getItems = function () {
     return this.state.items ? this.state.items.slice() : [];
   };
@@ -186,6 +312,7 @@
       date: params.date || U.getTodayIso(),
       time: params.time || "",
       pid: params.pid || "",
+      cid: (params.cid || params.clientId || "").trim(),
       who: (params.who || "").trim(),
       phone: (params.phone || "").trim(),
       done: false
@@ -433,6 +560,7 @@
       this.state = {
         version: 2,
         theme: parsed.theme || "auto",
+        clients: Array.isArray(parsed.clients) ? parsed.clients : [],
         projects: parsed.projects,
         items: parsed.items,
         categories: Array.isArray(parsed.categories) ? parsed.categories : JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []))

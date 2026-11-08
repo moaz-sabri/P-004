@@ -11,6 +11,7 @@
   var StatsV = global.StudioStatsView;
   var AgendaV = global.StudioAgendaView;
   var KanbanV = global.StudioKanbanView;
+  var ClientsV = global.StudioClientsView;
 
   function App() {
     this.page = document.body.dataset.page || "agenda";
@@ -206,6 +207,10 @@
           }
         }, 60), { passive: true });
       }
+    } else if (this.page === "clients" && ClientsV && this.dom.viewContainer) {
+      this.dom.viewContainer.innerHTML = ClientsV.renderClientsView({
+        searchQuery: this.searchQuery
+      });
     }
 
     // 3. Update clear search button
@@ -545,6 +550,33 @@
         var quickAddBtn = e.target.closest('[data-action="quick-add-task"]');
         if (quickAddBtn) {
           M.openTaskModal(null, quickAddBtn.dataset.projectId);
+          return;
+        }
+
+        var openClientBtn = e.target.closest('[data-action="open-client"]');
+        if (openClientBtn) {
+          M.openClientDetail(openClientBtn.dataset.id);
+          return;
+        }
+
+        var editClientBtn = e.target.closest('[data-action="edit-client"]');
+        if (editClientBtn) {
+          M.openClientModal(editClientBtn.dataset.id);
+          return;
+        }
+
+        var deleteClientBtn = e.target.closest('[data-action="delete-client"]');
+        if (deleteClientBtn) {
+          var cId = deleteClientBtn.dataset.id;
+          var cl = S.getClient(cId);
+          M.openConfirmModal({
+            title: "حذف العميل",
+            message: 'هل أنت متأكد من حذف العميل "' + (cl ? cl.name : "") + '"؟ سيُلغى الربط مع المهام (لن تُحذف المهام).',
+            onConfirm: function () {
+              S.deleteClient(cId);
+              M.showToast("تم حذف العميل", "info");
+            }
+          });
           return;
         }
       });

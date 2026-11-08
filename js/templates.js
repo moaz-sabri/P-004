@@ -72,6 +72,7 @@
     return {
       version: 2,
       theme: "auto",
+      clients: [],
       projects: [
         {
           id: p1,
