@@ -178,6 +178,34 @@
       this.dom.viewContainer.innerHTML = KanbanV.renderKanbanView({
         searchQuery: this.searchQuery
       });
+
+      var board = document.getElementById("kanbanBoard");
+      if (board && window.innerWidth <= 768) {
+        board.addEventListener("scroll", U.debounce(function () {
+          var cols = board.querySelectorAll("[data-phase-col]");
+          var boardRect = board.getBoundingClientRect();
+          var boardCenter = boardRect.left + boardRect.width / 2;
+          var closestPhase = null;
+          var minDistance = Infinity;
+
+          cols.forEach(function (col) {
+            var colRect = col.getBoundingClientRect();
+            var colCenter = colRect.left + colRect.width / 2;
+            var dist = Math.abs(boardCenter - colCenter);
+            if (dist < minDistance) {
+              minDistance = dist;
+              closestPhase = col.dataset.phaseCol;
+            }
+          });
+
+          if (closestPhase !== null) {
+            var tabs = document.querySelectorAll("[data-phase-tab]");
+            tabs.forEach(function (t) {
+              t.classList.toggle("is-active", t.dataset.phaseTab === closestPhase);
+            });
+          }
+        }, 60), { passive: true });
+      }
     }
 
     // 3. Update clear search button
@@ -393,6 +421,20 @@
       });
 
       this.dom.viewContainer.addEventListener("click", function (e) {
+        var phaseTab = e.target.closest("[data-phase-tab]");
+        if (phaseTab) {
+          var targetPhase = phaseTab.dataset.phaseTab;
+          var col = document.querySelector('[data-phase-col="' + targetPhase + '"]');
+          if (col) {
+            col.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+          }
+          var allTabs = document.querySelectorAll("[data-phase-tab]");
+          for (var i = 0; i < allTabs.length; i++) {
+            allTabs[i].classList.toggle("is-active", allTabs[i] === phaseTab);
+          }
+          return;
+        }
+
         var chip = e.target.closest("[data-filter]");
         if (chip) {
           self.activeFilter = chip.dataset.filter;

@@ -1,5 +1,6 @@
 /**
  * Kanban Board / Projects View (Universal & Local)
+ * Enhanced with mobile phase switcher & responsive touch support
  */
 (function (global) {
   "use strict";
@@ -106,7 +107,20 @@
       ].join("");
     }
 
+    var mobileTabsHtml = [
+      '<div class="kanban-mobile-tabs" role="tablist" aria-label="مراحل المشاريع">',
+      T.PHASES.map(function (phase, idx) {
+        var count = projects.filter(function (p) { return p.phase === phase.id; }).length;
+        return '<button type="button" class="kanban-mobile-tab ' + (idx === 0 ? "is-active" : "") + '" data-phase-tab="' + phase.id + '">' +
+          '<span>' + phase.label + '</span>' +
+          '<span class="tab-badge">' + count + '</span>' +
+          '</button>';
+      }).join(""),
+      '</div>'
+    ].join("");
+
     return [
+      mobileTabsHtml,
       '<div class="kanban-board" id="kanbanBoard">',
       T.PHASES.map(function (phase) {
         var phaseProjects = projects.filter(function (p) { return p.phase === phase.id; }).sort(function (a, b) {

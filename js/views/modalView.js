@@ -23,9 +23,18 @@
       document.body.appendChild(container);
     }
 
+    var iconSvg = "";
+    if (type === "success") {
+      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0;color:var(--color-success);"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else if (type === "error") {
+      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0;color:var(--color-late);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+    } else {
+      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0;color:var(--color-info);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+    }
+
     var toast = document.createElement("div");
     toast.className = "toast toast-" + type;
-    toast.textContent = message;
+    toast.innerHTML = iconSvg + '<span>' + (U ? U.escapeHtml(message) : message) + '</span>';
 
     container.appendChild(toast);
 
