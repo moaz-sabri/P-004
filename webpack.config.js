@@ -93,6 +93,19 @@ module.exports = (env, argv) => {
 
   return {
     mode: isProd ? "production" : "development",
+    devServer: {
+      static: { directory: path.resolve(__dirname, "dist") },
+      historyApiFallback: {
+        rewrites: [
+          { from: /^\/$/, to: "/index.html" },
+          { from: /^\/projects(?:\/)?$/, to: "/projects.html" },
+          { from: /^\/clients(?:\/)?$/, to: "/clients.html" },
+          { from: /^\/settings(?:\/)?$/, to: "/settings.html" },
+          { from: /^\/guide(?:\/)?$/, to: "/guide.html" },
+        ],
+      },
+      hot: false,
+    },
     entry: {
       main: [...SCRIPTS, "./css/main.css"],
     },
@@ -102,9 +115,8 @@ module.exports = (env, argv) => {
       chunkFilename: `js/[name].[contenthash:12].${revisionSuffix}.js`,
       assetModuleFilename: "assets/[hash][ext][query]",
       clean: {
-        // Keep hand-dropped / unregistered HTML files so they can still be
-        // opened directly, while stale hashed JS/CSS are still removed.
-        keep: (assetPath) => /\.html$/i.test(assetPath),
+        // HTML is generated only from src/; stale build output is removed.
+        keep: () => false,
       },
       publicPath: "./",
     },

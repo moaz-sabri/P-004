@@ -3,47 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="مرشد استخدام مفكرة الاستوديو">
+  <meta name="description" content="مركز المساعدة وشرح استخدام دفتر">
   <meta name="theme-color" content="#1f6355">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
-  <link rel="stylesheet" href="./css/main.css">
-  <title>مرشد الاستخدام | مفكرة الاستوديو</title>
+  <title>مركز المساعدة | دفتر</title>
 </head>
 <body data-page="guide">
-  <main class="app-container" style="max-width:1000px">
-    <header class="app-header">
+  <main class="app-container help-container">
+    <header class="app-header help-header">
       <div class="brand-section">
-        <h1 class="brand-title">📘 مرشد مفكرة الاستوديو</h1>
-        <p class="brand-date">شرح مبسط لكل أجزاء التطبيق</p>
+        <div class="help-eyebrow"><span class="help-eyebrow-dot"></span> مركز المساعدة</div>
+        <h1 class="brand-title">كيف تستخدم دفتر؟</h1>
+        <p class="brand-date">دليل عملي مختصر يساعدك على تنظيم يومك ومتابعة مشاريعك بثقة.</p>
       </div>
+      <div class="help-header-badge"><span>دفتر</span><small>منظمك اليومي</small></div>
     </header>
-
-    <nav class="main-nav" aria-label="التنقل">
-      <a href="index.html" class="nav-tab">الأجندة</a>
-      <a href="projects.html" class="nav-tab">المشاريع</a>
-      <a href="clients.html" class="nav-tab">العملاء</a>
-      <a href="settings.html" class="nav-tab">الإعدادات</a>
-      <a href="guide.html" class="nav-tab" aria-current="true">المرشد</a>
+    <nav class="main-nav" aria-label="التنقل الرئيسي">
+      <a href="/" class="nav-tab">الأجندة</a><a href="/projects" class="nav-tab">المشاريع</a><a href="/clients" class="nav-tab">العملاء</a><a href="/settings" class="nav-tab">الإعدادات</a><a href="/guide" class="nav-tab" aria-current="true">المرشد</a>
     </nav>
-
-    <section class="setting-card">
-      <h2>مرحبًا بك</h2>
-      <p>مفكرة الاستوديو تساعدك على تنظيم المشاريع والعملاء والمهام والمواعيد في مكان واحد. يمكنك العمل دون إنترنت، ثم مزامنة التغييرات عند عودة الاتصال.</p>
+    <section class="help-hero" aria-labelledby="helpHeroTitle">
+      <div class="help-hero-copy"><span class="help-kicker">ابدأ من هنا</span><h2 id="helpHeroTitle">رتّب العمل في أربع خطوات بسيطة</h2><p>أنشئ العميل، اربط به مشروعًا، ثم حوّل العمل إلى مهام واضحة لها موعد وحالة. كل شيء يظهر أمامك في مكانه.</p><a class="help-primary-link" href="/">ابدأ من الأجندة <span>←</span></a></div>
+      <div class="help-hero-visual" aria-hidden="true"><div class="help-hero-note"><b>اليوم</b><span>٣ مهام مرتبة</span><i>✓</i></div><div class="help-hero-note muted"><b>هذا الأسبوع</b><span>مشروعان قيد التنفيذ</span><i>↗</i></div></div>
     </section>
-
-    <div class="settings-grid">
-      <section class="setting-card"><h2>الأجندة والمواعيد</h2><p>استخدم الأجندة لإضافة المهام والمواعيد، حدد التاريخ والوقت والتصنيف والمشروع والعميل. يمكنك تعليم المهمة كمكتملة أو تعديلها لاحقًا.</p></section>
-      <section class="setting-card"><h2>المشاريع</h2><p>أنشئ مشروعًا جديدًا واربطه بعميل، ثم حرّكه بين مراحل لوحة Kanban. استخدم تاريخ التسليم لمتابعة المشاريع القريبة والمتأخرة.</p></section>
-      <section class="setting-card"><h2>العملاء</h2><p>احفظ بيانات العميل ومعلومات التواصل والملاحظات، ثم اربطه بالمشاريع والمهام لتظهر كل علاقاته في ملف واحد.</p></section>
-      <section class="setting-card"><h2>العمل دون إنترنت</h2><p>يمكنك الاستمرار في العمل محليًا. التغييرات تحفظ في طابور محلي، وتُرسل تلقائيًا بعد تسجيل الدخول وعودة الشبكة.</p></section>
-      <section class="setting-card"><h2>المزامنة والتعارضات</h2><p>يظهر عدد العمليات المعلقة في حالة المزامنة. إذا عدّل جهازان نفس العنصر، افتح التعارض واختر النسخة المحلية أو نسخة الخادم أو احتفظ بالنسختين.</p></section>
-      <section class="setting-card"><h2>النسخ الاحتياطي</h2><p>من الإعدادات صدّر نسخة JSON دورية واحفظها خارج الجهاز. لا تعتمد على المزامنة وحدها كنسخة احتياطية.</p></section>
-      <section class="setting-card"><h2>الإعدادات</h2><p>غيّر بداية الأسبوع والمظهر والإشعارات والتصنيفات. يستطيع المدير إدارة المستخدمين والأدوار من لوحة الصلاحيات.</p></section>
-      <section class="setting-card"><h2>نصيحة سريعة</h2><p>ابدأ بإنشاء العملاء، ثم المشاريع، ثم أضف المهام المرتبطة بها. استخدم البحث والفلترة للوصول السريع إلى ما تحتاجه.</p></section>
+    <div class="help-layout">
+      <aside class="help-toc" aria-label="محتويات الدليل"><div class="help-toc-title">في هذا الدليل</div><a href="#quick-start">البداية السريعة</a><a href="#daily-work">المهام اليومية</a><a href="#projects-workflow">متابعة المشاريع</a><a href="#example">مثال عملي</a><a href="#tips">نصائح مهمة</a></aside>
+      <div class="help-content">
+        <section class="help-section" id="quick-start"><div class="help-section-heading"><span class="help-number">١</span><div><span class="help-section-kicker">البداية السريعة</span><h2>جهّز دفتر للعمل</h2></div></div><div class="help-steps"><article class="help-step"><span>01</span><div><h3>أضف العميل</h3><p>من صفحة «العملاء» اختر «عميل جديد»، وسجّل الاسم ووسيلة التواصل. احفظ الملاحظات المهمة في ملفه.</p></div></article><article class="help-step"><span>02</span><div><h3>أنشئ المشروع</h3><p>من «المشاريع» أضف اسم المشروع والعميل وموعد التسليم. سيظهر المشروع في لوحة المتابعة.</p></div></article><article class="help-step"><span>03</span><div><h3>قسّم العمل إلى مهام</h3><p>أضف كل خطوة كمهمة قصيرة، وحدد التاريخ والتصنيف والمشروع المرتبط بها.</p></div></article><article class="help-step"><span>04</span><div><h3>تابع وأنجز</h3><p>راجع أجندة اليوم، علّم المهمة كمكتملة عند الانتهاء، وعدّلها في أي وقت إذا تغيرت الخطة.</p></div></article></div></section>
+        <section class="help-section" id="daily-work"><div class="help-section-heading"><span class="help-number">٢</span><div><span class="help-section-kicker">المهام اليومية</span><h2>كيف تضيف وتعدّل مهمة؟</h2></div></div><div class="help-action-grid"><article class="help-action-card"><div class="help-action-icon">＋</div><h3>إضافة مهمة</h3><p>اضغط زر الإضافة السريعة، اختر «مهمة عامة أو اتصال»، ثم اكتب العنوان والموعد والمشروع.</p><div class="help-mini-example">مثال: إرسال مخطط الإضاءة للعميل</div></article><article class="help-action-card"><div class="help-action-icon edit">✎</div><h3>تعديل مهمة</h3><p>افتح المهمة من الأجندة واختر «تعديل». غيّر الموعد أو الوصف أو الشخص المرتبط ثم احفظ.</p><div class="help-mini-example">مفيد عند تأجيل موعد أو تغيير أولوية</div></article><article class="help-action-card"><div class="help-action-icon done">✓</div><h3>إنهاء مهمة</h3><p>استخدم مربع الإنجاز بجانب المهمة. ستنتقل إلى قسم «منجز» لتبقى المراجعة سهلة.</p><div class="help-mini-example">يمكنك إلغاء الإنجاز إذا احتجت</div></article></div></section>
+        <section class="help-section" id="projects-workflow"><div class="help-section-heading"><span class="help-number">٣</span><div><span class="help-section-kicker">متابعة المشاريع</span><h2>اعرف ما تم وما تبقّى</h2></div></div><div class="help-kanban-guide"><div class="help-kanban-column"><b>قيد التخطيط</b><span>أفكار ومشاريع لم تبدأ</span><i>اسحب المشروع هنا عند تجهيزه</i></div><div class="help-kanban-arrow">←</div><div class="help-kanban-column active"><b>قيد التنفيذ</b><span>العمل الجاري الآن</span><i>تابع نسبة المهام المكتملة</i></div><div class="help-kanban-arrow">←</div><div class="help-kanban-column finished"><b>مكتمل</b><span>المشاريع المنتهية</span><i>احتفظ بالسجل للرجوع إليه</i></div></div><p class="help-note"><strong>نصيحة:</strong> حرّك المشروع بين الأعمدة حسب مرحلته، ولا تجعل كل التفاصيل في اسم المشروع؛ استخدم المهام لتوثيق الخطوات.</p></section>
+        <section class="help-section help-example-section" id="example"><div class="help-section-heading"><span class="help-number">٤</span><div><span class="help-section-kicker">مثال عملي</span><h2>من طلب العميل إلى التسليم</h2></div></div><div class="help-example"><div class="help-example-side"><span class="help-example-label">السيناريو</span><h3>تصميم غرفة معيشة</h3><p>عميل جديد يريد تصورًا أوليًا خلال أسبوع.</p></div><div class="help-example-timeline"><div><b>اليوم ١</b><span>إضافة العميل والمشروع</span></div><div><b>اليوم ٢</b><span>مهمة: جمع المقاسات والصور</span></div><div><b>اليوم ٤</b><span>مهمة: تجهيز لوحة الإلهام</span></div><div><b>اليوم ٧</b><span>مهمة: إرسال العرض واعتماد التصميم</span></div></div></div></section>
+        <section class="help-section" id="tips"><div class="help-section-heading"><span class="help-number">٥</span><div><span class="help-section-kicker">نصائح مهمة</span><h2>استخدم دفتر براحة</h2></div></div><div class="help-tips"><div><b>🔎 ابحث بدل التمرير</b><span>استخدم البحث في الأجندة والعملاء للوصول السريع.</span></div><div><b>🔔 فعّل التنبيهات</b><span>ستصلك تذكيرات بالمهام والمواعيد العاجلة.</span></div><div><b>💾 خذ نسخة احتياطية</b><span>صدّر نسخة JSON من الإعدادات بشكل دوري.</span></div><div><b>☁️ اعمل دون إنترنت</b><span>تُحفظ التغييرات محليًا وتتم المزامنة لاحقًا.</span></div></div></section>
+      </div>
     </div>
-
-    <section class="setting-card"><h2>عند حدوث مشكلة</h2><ol><li>تحقق من حالة الاتصال والمزامنة.</li><li>خذ نسخة احتياطية JSON.</li><li>راجع سجل التغييرات والتعارضات.</li><li>إذا استمرت المشكلة، احتفظ برسالة الخطأ ووقت حدوثها.</li></ol></section>
   </main>
 </body>
 </html>

@@ -1,8 +1,8 @@
 {
-  "name": "مفكرة الاستوديو | Studio Planner",
-  "short_name": "مفكرة الاستوديو",
-  "description": "نظام محلي متكامل لإدارة مشاريع الاستوديو، مواعيد القياسات، والمهام التنفيذية بدون إنترنت",
-  "start_url": "./index.html",
+  "name": "دفتر | Daftar",
+  "short_name": "دفتر",
+  "description": "دفتر ذكي لإدارة المشاريع والعملاء والمهام والمواعيد بدون إنترنت",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
@@ -35,19 +35,19 @@
     {
       "name": "الأجندة والمواعيد",
       "short_name": "الأجندة",
-      "url": "./index.html",
+      "url": "/",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "لوحة المشاريع",
       "short_name": "المشاريع",
-      "url": "./projects.html",
+      "url": "/projects",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "إعدادات النظام",
       "short_name": "الإعدادات",
-      "url": "./settings.html",
+      "url": "/settings",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     }
   ]

@@ -93,7 +93,7 @@
       '          <path d="M2 12l10 5 10-5"/>',
       '        </svg>',
       '      </div>',
-      '      <h2 class="auth-gate-title">مفكرة الاستوديو</h2>',
+      '      <h2 class="auth-gate-title">دفتر</h2>',
       '      <p class="auth-gate-subtitle">تسجيل الدخول ومزامنة المواعيد والمشاريع</p>',
       '    </div>',
 
@@ -136,7 +136,7 @@
       '        <input type="password" id="gateLoginPass" class="form-control" autocomplete="current-password" placeholder="••••••••" value="admin123">',
       '      </div>',
       '      <button type="submit" class="btn btn-block" style="padding: 12px; font-size: 1rem; margin-top: 14px;" id="gateLoginSubmitBtn">',
-      '        <span>دخول إلى مفكرة الاستوديو ومزامنة البيانات</span>',
+      '        <span>دخول إلى دفتر ومزامنة البيانات</span>',
       '      </button>',
       '      <div class="gate-credentials-hint">',
       '        <span>💡 حساب تجريبي سريع: </span>',
@@ -172,7 +172,7 @@
       '      <div class="local-box-icon">💻</div>',
       '      <div class="local-box-content">',
       '        <div class="local-box-title">ترغب بالعمل بدون حساب وبدون إنترنت؟</div>',
-      '        <p class="local-box-desc">يمكنك تثبيت مفكرة الاستوديو كبرنامج محلي على جهازك للعمل بدون إنترنت وبدون حساب، مع إمكانية المزامنة لاحقاً عند إنشاء حساب.</p>',
+      '        <p class="local-box-desc">يمكنك تثبيت دفتر كبرنامج محلي على جهازك للعمل بدون إنترنت وبدون حساب، مع إمكانية المزامنة لاحقاً عند إنشاء حساب.</p>',
       '        <button type="button" class="btn btn-secondary btn-install-local" id="gateInstallAppBtn">',
       '          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">',
       '            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>',
@@ -322,7 +322,7 @@
             showError(err.message || "اسم المستخدم أو كلمة المرور غير صحيحة. يرجى المحاولة مجدداً.");
             if (submitBtn) {
               submitBtn.disabled = false;
-              submitBtn.innerHTML = '<span>دخول إلى مفكرة الاستوديو ومزامنة البيانات</span>';
+              submitBtn.innerHTML = '<span>دخول إلى دفتر ومزامنة البيانات</span>';
             }
           });
       });

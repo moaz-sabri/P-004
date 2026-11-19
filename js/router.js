@@ -6,11 +6,11 @@
   "use strict";
 
   var routes = {
-    agenda: "index.html",
-    projects: "projects.html",
-    clients: "clients.html",
-    settings: "settings.html",
-    guide: "guide.html"
+    agenda: "/",
+    projects: "/projects",
+    clients: "/clients",
+    settings: "/settings",
+    guide: "/guide"
   };
 
   function getPageKey() {

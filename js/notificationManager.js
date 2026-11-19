@@ -188,7 +188,7 @@
   };
 
   NotificationManager.prototype.testNotification = function () {
-    this.sendNotification("🔔 إشعار محلي من مفكرة الاستوديو", {
+    this.sendNotification("🔔 إشعار محلي من دفتر", {
       body: "نظام التنبيهات ونغمات الاستوديو يعمل محلياً بنجاح 100%!",
       tag: "test-alert"
     });

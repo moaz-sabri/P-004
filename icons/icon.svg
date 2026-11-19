@@ -19,19 +19,11 @@
   <!-- Subtle inner border -->
   <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="4"/>
 
-  <!-- Studio Emblem: Layered sheets / Architect & Planner layers -->
+  <!-- Daftar emblem: an open notebook with a bookmark -->
   <g filter="url(#shadow)" transform="translate(40, 36)">
-    <!-- Bottom layer -->
-    <path d="M216 340 L60 250 L216 160 L372 250 Z" fill="rgba(255,255,255,0.25)"/>
-    
-    <!-- Middle layer -->
-    <path d="M216 260 L60 170 L216 80 L372 170 Z" fill="url(#goldGrad)"/>
-    
-    <!-- Top layer -->
-    <path d="M216 180 L60 90 L216 0 L372 90 Z" fill="#ffffff"/>
-
-    <!-- Small Checkmark emblem on top layer -->
-    <circle cx="216" cy="90" r="32" fill="#1f6355"/>
-    <path d="M204 90 L212 98 L228 82" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M55 70 Q216 28 377 70 V315 Q216 275 55 315 Z" fill="#ffffff"/>
+    <path d="M216 70 V315" stroke="#d8c27b" stroke-width="10"/>
+    <path d="M82 102 Q150 84 190 96 M82 140 Q150 122 190 134 M242 96 Q300 84 350 102 M242 134 Q300 122 350 140" fill="none" stroke="#246a5d" stroke-width="9" stroke-linecap="round"/>
+    <path d="M300 70 V198 L327 174 L354 198 V70" fill="url(#goldGrad)"/>
   </g>
 </svg>

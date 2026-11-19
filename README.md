@@ -1,4 +1,4 @@
-# 📋 مفكرة الاستوديو | Studio Planner (نظام محلي متكامل بنمط Offline-First مع Docker & MySQL)
+# 📋 دفتر | Daftar (نظام محلي متكامل بنمط Offline-First مع Docker & MySQL)
 
 - [مرشد المستخدم داخل التطبيق](guide.html)
 - [خارطة طريق المطورين](docs/DEVELOPER_ROADMAP.md)

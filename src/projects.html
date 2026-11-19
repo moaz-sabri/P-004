@@ -7,9 +7,9 @@
   <meta name="theme-color" content="#1f6355">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="مفكرة الاستوديو">
+  <meta name="apple-mobile-web-app-title" content="دفتر">
   
-  <title>لوحة المشاريع (Kanban) | مفكرة الاستوديو</title>
+  <title>لوحة المشاريع (Kanban) | دفتر</title>
 
   <!-- PWA Manifest & Icons -->
   <link rel="manifest" href="manifest.json">
@@ -91,7 +91,7 @@
 
     <!-- Multi-Page Navigation Bar -->
     <nav class="main-nav" aria-label="أقسام التطبيق الرئيسية">
-      <a href="./index.html" class="nav-tab" data-route="agenda" aria-current="false">
+      <a href="./" class="nav-tab" data-route="agenda" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
           <line x1="16" y1="2" x2="16" y2="6"/>
@@ -101,7 +101,7 @@
         <span>الأجندة والمواعيد</span>
       </a>
 
-      <a href="./projects.html" class="nav-tab" data-route="projects" aria-current="page">
+      <a href="/projects" class="nav-tab" data-route="projects" aria-current="page">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="12 2 2 7 12 12 22 7 12 22 12 12 2 7"/>
           <polyline points="2 17 12 22 22 17"/>
@@ -110,7 +110,7 @@
         <span>لوحة المشاريع (Kanban)</span>
       </a>
 
-      <a href="./clients.html" class="nav-tab" data-route="clients" aria-current="false">
+      <a href="/clients" class="nav-tab" data-route="clients" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
@@ -120,7 +120,7 @@
         <span>العملاء</span>
       </a>
 
-      <a href="./settings.html" class="nav-tab" data-route="settings" aria-current="false">
+      <a href="/settings" class="nav-tab" data-route="settings" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -131,6 +131,7 @@
 
     <!-- Project Controls & Search -->
     <div class="toolbar-section">
+      <a class="context-help" href="/guide#projects-workflow" title="شرح متابعة المشاريع ونقلها بين المراحل" aria-label="شرح المشاريع"><span class="context-help-icon">؟</span><span>كيف أتابع المشروع؟</span></a>
       <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
         <div class="search-box" style="flex:1; min-width: 220px;">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
