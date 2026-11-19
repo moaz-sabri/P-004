@@ -251,7 +251,15 @@
         return data;
       })
       .catch(function (err) {
-        console.warn("Background sync paused (offline or server unreachable):", err);
+        // Preserve the queue and propagate the failure so callers can show the
+        // real result instead of reporting a false successful sync.
+        if (err && err.status >= 401 && err.status < 500) {
+          self.isOnline = true;
+        } else {
+          self.isOnline = false;
+        }
+        self._notify();
+        throw err;
       })
       .finally(function () {
         self.isSyncing = false;

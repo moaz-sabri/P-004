@@ -94,8 +94,9 @@
       : fetch("/api/auth/claim_local_data", options).then(function (r) { return r.json(); });
 
     return fetcher.catch(function (err) {
-      console.warn("Claim local data warning:", err);
-      return null;
+      // Do not complete login/registration while local data is known not to
+      // have been associated with the account. The caller can retry safely.
+      throw new Error("تم تسجيل الدخول، لكن تعذر ربط البيانات المحلية. أعد المحاولة عند توفر الاتصال.");
     });
   };
 
@@ -172,7 +173,9 @@
   };
 
   AuthManager.prototype.logout = function () {
-    fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch(function () {});
+    fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch(function (err) {
+      console.warn("Logout request failed; local session cleared:", err);
+    });
     this.token = "";
     this.user = null;
     localStorage.removeItem(USER_KEY);
