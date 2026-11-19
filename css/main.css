@@ -7,3 +7,103 @@
 @import url("./components.css");
 @import url("./agenda.css");
 @import url("./kanban.css");
+
+/* --------------------------------------------------------------------------
+   UX polish layer
+   Keeps the original components intact while improving hierarchy, density
+   and responsive behaviour across the agenda and project board.
+   -------------------------------------------------------------------------- */
+:root {
+  --ui-gradient: linear-gradient(135deg, rgba(31, 99, 85, .12), rgba(201, 162, 78, .10));
+}
+
+body {
+  background-image: radial-gradient(circle at 8% 0%, rgba(31, 99, 85, .08), transparent 30rem),
+    radial-gradient(circle at 100% 12%, rgba(201, 162, 78, .07), transparent 24rem);
+}
+
+.app-container { max-width: 1480px; }
+
+.app-header {
+  padding: 18px 20px;
+  border: 1px solid var(--border-line);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  box-shadow: 0 12px 35px rgba(20, 45, 40, .08);
+  backdrop-filter: blur(14px);
+}
+
+.brand-title { letter-spacing: -.035em; }
+.brand-icon { filter: drop-shadow(0 5px 8px rgba(31,99,85,.18)); }
+
+.main-nav {
+  padding: 6px;
+  border: 1px solid var(--border-line);
+  border-radius: 16px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.nav-tab { border-radius: 11px; transition: transform .2s ease, background .2s ease, color .2s ease; }
+.nav-tab:hover { transform: translateY(-1px); text-decoration: none; }
+
+.toolbar-section { margin-top: 18px; }
+.search-box {
+  min-height: 48px;
+  border-radius: 15px;
+  box-shadow: 0 8px 24px rgba(20,45,40,.06);
+}
+
+.quick-add-bar, .task-row, .project-card, .kanban-col { box-shadow: 0 8px 24px rgba(20,45,40,.055); }
+.task-row { border-radius: 16px; padding: 15px 18px; }
+.task-row::before { content: ""; width: 3px; align-self: stretch; border-radius: 3px; background: var(--accent-primary); opacity: .45; }
+.task-row.is-done::before { background: var(--ink-muted); }
+.task-title { font-size: 1rem; }
+.task-meta { row-gap: 6px; }
+
+.kanban-board { gap: 20px; }
+.kanban-col { padding: 18px; border-radius: 20px; background: linear-gradient(180deg, var(--bg-subtle), color-mix(in srgb, var(--bg-subtle) 84%, var(--accent-light))); }
+.col-header { border-bottom-width: 1px; }
+.col-title::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-primary); box-shadow: 0 0 0 5px var(--accent-light); }
+.project-card { border-radius: 16px; padding: 17px; }
+.project-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(20,45,40,.12); }
+.project-card-name { letter-spacing: -.02em; }
+.progress-bar-bg { height: 8px; }
+
+@media (max-width: 1024px) {
+  .app-container { padding-inline: 18px; }
+  .app-header { padding: 16px; }
+  .stats-container { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .main-nav { overflow-x: auto; justify-content: flex-start; }
+  .nav-tab { flex: 0 0 auto; }
+}
+
+@media (max-width: 768px) {
+  .app-container { padding-inline: 12px; }
+  .app-header { border-radius: 18px; padding: 14px; }
+  .stats-container { gap: 7px; }
+  .stat-card { padding: 8px 5px; }
+  .stat-card b { font-size: 1.18rem; }
+  .stat-card span { font-size: .68rem; }
+  .main-nav { margin-inline: -2px; }
+  .nav-tab { padding-inline: 12px; font-size: .8rem; }
+  .kanban-mobile-tabs { position: sticky; top: 8px; z-index: 3; padding: 7px; border-radius: 14px; background: color-mix(in srgb, var(--bg-app) 90%, transparent); backdrop-filter: blur(10px); }
+  .kanban-board { gap: 12px; margin-inline: -2px; }
+  .kanban-col { min-height: 280px; padding: 14px; }
+  .task-row { padding: 13px 12px; }
+  .task-row::before { display: none; }
+}
+
+@media (max-width: 480px) {
+  .brand-title { font-size: 1.18rem; }
+  .header-actions { gap: 5px; }
+  .header-actions .btn-sync-status span:last-child, .header-actions .btn-user-profile span, .header-actions .btn-install { display: none; }
+  .btn-sync-status, .btn-user-profile { min-width: 40px; padding-inline: 10px; }
+  .stats-container { grid-template-columns: repeat(2, 1fr); }
+  .search-box { min-height: 46px; }
+  .quick-add-submit { padding-inline: 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

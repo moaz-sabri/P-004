@@ -1,0 +1,14 @@
+services:
+  web:
+    restart: always
+  php:
+    restart: always
+    environment:
+      APP_ENV: production
+    read_only: true
+    tmpfs:
+      - /tmp
+  db:
+    restart: always
+
+# phpMyAdmin is intentionally not enabled in the production composition.

@@ -11,11 +11,19 @@ const BUILD_REVISION = process.env.BUILD_REVISION || String(Date.now());
 // Source scripts must load in this dependency order (IIFE globals).
 const SCRIPTS = [
   "./js/utils.js",
+  "./js/router.js",
   "./js/templates.js",
+  "./js/authManager.js",
+  "./js/syncManager.js",
+  "./js/calendarWeek.js",
   "./js/store.js",
   "./js/notificationManager.js",
   "./js/views/statsView.js",
   "./js/views/modalView.js",
+  "./js/views/conflictModal.js",
+  "./js/views/authModal.js",
+  "./js/views/authGateView.js",
+  "./js/views/changeLogModal.js",
   "./js/views/agendaView.js",
   "./js/views/kanbanView.js",
   "./js/views/clientsView.js",
@@ -73,30 +81,15 @@ module.exports = (env, argv) => {
     }),
   ];
 
+  // Keep bundle clean, fast, and debuggable without TDZ obfuscation issues
+  // WebpackObfuscator was causing: Uncaught ReferenceError: Cannot access before initialization
+  /*
   if (isProd) {
     plugins.push(
-      new WebpackObfuscator(
-        {
-          compact: true,
-          controlFlowFlattening: false,
-          deadCodeInjection: false,
-          debugProtection: false,
-          disableConsoleOutput: false,
-          identifierNamesGenerator: "hexadecimal",
-          log: false,
-          renameGlobals: false,
-          rotateStringArray: true,
-          selfDefending: false,
-          stringArray: true,
-          stringArrayEncoding: ["base64"],
-          stringArrayThreshold: 0.75,
-          transformObjectKeys: false,
-          unicodeEscapeSequence: false,
-        },
-        ["**/vendors~*.js"] // exclude nothing extra actually pattern; safe
-      )
+      new WebpackObfuscator(...)
     );
   }
+  */
 
   return {
     mode: isProd ? "production" : "development",

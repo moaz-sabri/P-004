@@ -108,6 +108,39 @@
     return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
   }
 
+  function safeFetchJson(url, options) {
+    return fetch(url, options)
+      .then(function (res) {
+        return res.text().then(function (text) {
+          var data = null;
+          if (text && text.trim()) {
+            try {
+              data = JSON.parse(text);
+            } catch (err) {
+              console.warn("Non-JSON server response from " + url + ":", text.slice(0, 150));
+            }
+          }
+          if (!res.ok) {
+            var msg = (data && data.error) ? data.error : ("تعذر إتمام الطلب من الخادم (رمز " + res.status + ")");
+            var err = new Error(msg);
+            err.status = res.status;
+            err.data = data;
+            throw err;
+          }
+          if (data === null) {
+            return { success: true };
+          }
+          return data;
+        });
+      })
+      .catch(function (err) {
+        if (err && err.name === "TypeError" && (err.message || "").indexOf("fetch") !== -1) {
+          throw new Error("تعذر الاتصال بالخادم، يرجى التأكد من توفر الاتصال والمحاولة مرة أخرى.");
+        }
+        throw err;
+      });
+  }
+
   global.StudioUtils = {
     escapeHtml: escapeHtml,
     generateId: generateId,
@@ -118,6 +151,7 @@
     getRelativeDateHeading: getRelativeDateHeading,
     debounce: debounce,
     downloadJsonFile: downloadJsonFile,
-    hexToRgba: hexToRgba
+    hexToRgba: hexToRgba,
+    safeFetchJson: safeFetchJson
   };
 })(window);

@@ -6,6 +6,11 @@
   "scripts": {
     "build": "webpack --config webpack.config.js --mode production",
     "postbuild": "node ./copy-dist.js",
+    "test": "node --test tests/*.test.js",
+    "test:php": "php tests/SyncServiceTest.php",
+    "test:auth": "php tests/AuthTokenTest.php",
+    "test:permissions": "php tests/AuthorizationTest.php",
+    "preflight": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preflight.ps1",
     "dev": "webpack --config webpack.config.js --mode development --watch",
     "start": "webpack serve --config webpack.config.js --mode development"
   },

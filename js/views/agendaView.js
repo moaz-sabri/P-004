@@ -1,5 +1,5 @@
 /**
- * Agenda View (Universal & Local)
+ * Agenda View (Universal, Local & Weekly Calendar Integration)
  */
 (function (global) {
   "use strict";
@@ -85,11 +85,21 @@
     var activeFilter = options.activeFilter || "all";
     var searchQuery = options.searchQuery || "";
     var S = global.StudioStore;
+    var CW = global.StudioCalendarWeek;
     var today = U.getTodayIso();
 
     var allItems = S.getUnifiedItems({ kind: activeFilter, query: searchQuery });
     var baseItems = S.getUnifiedItems({ query: searchQuery });
     var categories = S.getCategories ? S.getCategories() : [];
+
+    // Weekly Calendar Integration
+    var weeklyBarHtml = CW ? CW.renderWeeklyBarHtml() : "";
+    var weekInfo = CW ? CW.getWeekInfo() : null;
+
+    if (CW && CW.filterByWeek && weekInfo) {
+      allItems = CW.filterItemsForWeek(allItems, weekInfo);
+      baseItems = CW.filterItemsForWeek(baseItems, weekInfo);
+    }
 
     var chipCounts = { all: baseItems.length };
     for (var b = 0; b < baseItems.length; b++) {
@@ -97,12 +107,10 @@
       chipCounts[itemKind] = (chipCounts[itemKind] || 0) + 1;
     }
 
-    // Only render categories that have actual items (value > 0) or are currently active
     var visibleCategories = categories.filter(function (cat) {
       return (chipCounts[cat.id] || 0) > 0 || activeFilter === cat.id;
     });
 
-    // Check if there are other kinds in baseItems not in categories (e.g., delivery or legacy)
     var catIds = categories.map(function (c) { return c.id; });
     for (var kindKey in chipCounts) {
       if (chipCounts.hasOwnProperty(kindKey) && kindKey !== "all" && catIds.indexOf(kindKey) === -1 && chipCounts[kindKey] > 0) {
@@ -152,13 +160,38 @@
       '</form>'
     ].join("");
 
+    var topToolbarHtml = "";
+    var Auth = global.StudioAuth;
+    var Sync = global.StudioSync;
+    if (Sync && Sync.isOnline && (!Auth || !Auth.isLoggedIn())) {
+      topToolbarHtml += [
+        '<div class="online-auth-notice">',
+        '  <div class="online-auth-notice-text">',
+        '    <strong>⚠️ أنت متصل بالإنترنت:</strong> للمزامنة السحابية مع قاعدة البيانات MySQL ومشاركة التعديلات، يلزم تسجيل الدخول أو إنشاء حساب (العمل بدون حساب متاح فقط في الوضع المحلي أوفلاين). سيتم نقل ونسب كافة بياناتك المحلية لحسابك تلقائياً.',
+        '  </div>',
+        '  <div class="online-auth-notice-actions">',
+        '    <button class="btn btn-sm" id="agendaAuthPromptBtn">تسجيل الدخول / إنشاء حساب</button>',
+        '  </div>',
+        '</div>'
+      ].join("");
+    }
+
+    topToolbarHtml += weeklyBarHtml + chipsHtml;
+
     if (allItems.length === 0) {
-      var isSearch = searchQuery.trim() || activeFilter !== "all";
-      return chipsHtml + [
+      var isSearch = searchQuery.trim() || activeFilter !== "all" || (CW && CW.filterByWeek);
+      var emptyMsg = "الأجندة فارغة حالياً";
+      if (CW && CW.filterByWeek) {
+        emptyMsg = "لا توجد مهام أو مواعيد في الأسبوع " + (weekInfo ? weekInfo.weekNumber : "");
+      } else if (searchQuery.trim() || activeFilter !== "all") {
+        emptyMsg = "لا توجد نتائج مطابقة";
+      }
+
+      return topToolbarHtml + [
         '<div class="empty-state">',
         '  <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
-        '  <h4>' + (isSearch ? "لا توجد نتائج مطابقة" : "الأجندة فارغة حالياً") + '</h4>',
-        '  <p>' + (isSearch ? "جرّب تغيير عبارة البحث أو اختيار تصنيف آخر." : "ابدأ بإضافة أول مهمة أو موعد من الشريط أعلاه.") + '</p>',
+        '  <h4>' + emptyMsg + '</h4>',
+        '  <p>' + (isSearch ? "جرّب تغيير عبارة البحث، اختيار تصنيف آخر، أو الانتقال لأسبوع مختلف." : "ابدأ بإضافة أول مهمة أو موعد من الشريط أعلاه.") + '</p>',
         '</div>'
       ].join("");
     }
@@ -176,7 +209,7 @@
     var lateItems = openItems.filter(function (i) { return i.date < today; });
     var upcomingItems = openItems.filter(function (i) { return i.date >= today; });
 
-    var output = chipsHtml;
+    var output = topToolbarHtml;
 
     if (lateItems.length > 0) {
       output += '<section class="agenda-section">' +

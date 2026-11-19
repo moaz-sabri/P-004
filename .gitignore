@@ -1,8 +1,17 @@
 # Dependencies
 node_modules/
 
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+
 # Webpack build output
 dist/
+
+# Generated bundles copied to the project root by the build step
+/js/main.*.js
+/css/main.*.css
 
 # Logs
 npm-debug.log*

@@ -39,6 +39,24 @@
 
       <!-- Header Actions -->
       <div class="header-actions">
+        <!-- Sync Status Button -->
+        <button class="btn-sync-status" id="syncStatusBtn" title="حالة الاتصال والمزامنة بقاعدة بيانات MySQL">
+          <span class="sync-bullet" id="syncStatusBullet"></span>
+          <span id="syncStatusText">أوفلاين</span>
+        </button>
+
+        <!-- Conflict Alert Badge -->
+        <button class="btn-conflict-alert" id="conflictAlertBtn" title="يوجد تعارض في المزامنة بحاجة للمراجعة" style="display:none;">
+          <span class="alert-icon">⚠️</span>
+          <span>تعارضات (<span id="conflictAlertCount">0</span>)</span>
+        </button>
+
+        <!-- User Profile Button -->
+        <button class="btn-user-profile" id="userProfileBtn" title="الملف الشخصي والحساب">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="userProfileName">دخول</span>
+        </button>
+
         <!-- PWA Install Button -->
         <button class="btn-install" id="installAppBtn" title="تثبيت التطبيق على جهازك للعمل بدون إنترنت">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -68,9 +86,12 @@
       </div>
     </header>
 
+    <!-- Authentication Gate Container (Mandatory Access Control for Web/Online) -->
+    <div id="authGateContainer" style="display:none;"></div>
+
     <!-- Multi-Page Navigation Bar -->
     <nav class="main-nav" aria-label="أقسام التطبيق الرئيسية">
-      <a href="index.html" class="nav-tab" aria-current="false">
+      <a href="./index.html" class="nav-tab" data-route="agenda" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
           <line x1="16" y1="2" x2="16" y2="6"/>
@@ -80,7 +101,7 @@
         <span>الأجندة والمواعيد</span>
       </a>
 
-      <a href="projects.html" class="nav-tab" aria-current="true">
+      <a href="./projects.html" class="nav-tab" data-route="projects" aria-current="page">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="12 2 2 7 12 12 22 7 12 22 12 12 2 7"/>
           <polyline points="2 17 12 22 22 17"/>
@@ -89,7 +110,7 @@
         <span>لوحة المشاريع (Kanban)</span>
       </a>
 
-      <a href="clients.html" class="nav-tab" aria-current="false">
+      <a href="./clients.html" class="nav-tab" data-route="clients" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
@@ -99,7 +120,7 @@
         <span>العملاء</span>
       </a>
 
-      <a href="settings.html" class="nav-tab" aria-current="false">
+      <a href="./settings.html" class="nav-tab" data-route="settings" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>

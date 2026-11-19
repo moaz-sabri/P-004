@@ -1,5 +1,5 @@
 /**
- * Store / State Management (100% Local, Multi-page Compatible)
+ * Store / State Management (100% Local, Offline-First & MySQL Sync Compatible)
  */
 (function (global) {
   "use strict";
@@ -9,6 +9,17 @@
 
   var STORAGE_KEY = "mazen-planner-v2";
   var LEGACY_STORAGE_KEY = "mazen-planner-v1";
+  var WEEK_START_KEY = "studio_week_start_day";
+
+  function syncEnqueue(entityType, entityId, action, payload) {
+    if (global.StudioSync && global.StudioSync.enqueueChange) {
+      try {
+        global.StudioSync.enqueueChange(entityType, entityId, action, payload);
+      } catch (e) {
+        console.warn("Sync enqueue error:", e);
+      }
+    }
+  }
 
   function Store() {
     this.state = this._loadState();
@@ -30,6 +41,9 @@
         }
         if (!Array.isArray(state.projects)) state.projects = [];
         if (!Array.isArray(state.items)) state.items = [];
+        if (!state.weekStartDay) {
+          state.weekStartDay = localStorage.getItem(WEEK_START_KEY) || "saturday";
+        }
         return state;
       }
 
@@ -39,6 +53,7 @@
         var migrated = {
           version: 2,
           theme: "auto",
+          weekStartDay: localStorage.getItem(WEEK_START_KEY) || "saturday",
           clients: [],
           projects: Array.isArray(v1Data.projects) ? v1Data.projects : [],
           items: Array.isArray(v1Data.items) ? v1Data.items : [],
@@ -52,6 +67,7 @@
     }
 
     var initial = T.getInitialSeedData();
+    initial.weekStartDay = localStorage.getItem(WEEK_START_KEY) || "saturday";
     this._saveToStorage(initial);
     return initial;
   };
@@ -89,9 +105,27 @@
 
   Store.prototype.setTheme = function (theme) {
     this.state.theme = theme;
+    syncEnqueue("setting", "theme", "update", { value: theme });
     this._notify();
   };
 
+  Store.prototype.getWeekStartDay = function () {
+    return this.state.weekStartDay || localStorage.getItem(WEEK_START_KEY) || "saturday";
+  };
+
+  Store.prototype.setWeekStartDay = function (day, notify) {
+    if (!day || ["saturday", "sunday", "monday"].indexOf(day) === -1) {
+      day = "saturday";
+    }
+    this.state.weekStartDay = day;
+    localStorage.setItem(WEEK_START_KEY, day);
+    syncEnqueue("setting", "weekStartDay", "update", { value: day });
+    if (notify !== false) {
+      this._notify();
+    }
+  };
+
+  /* ---------------------------------------------------------------- projects */
   Store.prototype.getProjects = function () {
     return this.state.projects ? this.state.projects.slice() : [];
   };
@@ -121,6 +155,7 @@
     };
 
     this.state.projects.push(newProj);
+    syncEnqueue("project", newProj.id, "create", newProj);
 
     if (generateTasks) {
       var today = U.getTodayIso();
@@ -129,7 +164,7 @@
       for (var j = 0; j < T.PROJECT_TASK_TEMPLATES.length; j++) {
         var tpl = T.PROJECT_TASK_TEMPLATES[j];
         var offsetDays = Math.round(duration * tpl[2]);
-        this.state.items.push({
+        var taskItem = {
           id: U.generateId(),
           title: tpl[1],
           kind: tpl[0],
@@ -140,7 +175,9 @@
           who: newProj.client || "",
           phone: "",
           done: false
-        });
+        };
+        this.state.items.push(taskItem);
+        syncEnqueue("item", taskItem.id, "create", taskItem);
       }
     }
 
@@ -156,6 +193,7 @@
         proj[key] = updates[key];
       }
     }
+    syncEnqueue("project", id, "update", proj);
     this._notify();
     return proj;
   };
@@ -164,13 +202,20 @@
     var proj = this.getProject(id);
     if (proj) {
       proj.phase = Number(newPhase);
+      syncEnqueue("project", id, "update", { phase: proj.phase });
       this._notify();
     }
   };
 
   Store.prototype.deleteProject = function (id, deleteAssociatedTasks) {
     this.state.projects = (this.state.projects || []).filter(function (p) { return p.id !== id; });
+    syncEnqueue("project", id, "delete", {});
+
     if (deleteAssociatedTasks) {
+      var associated = (this.state.items || []).filter(function (i) { return i.pid === id; });
+      for (var a = 0; a < associated.length; a++) {
+        syncEnqueue("item", associated[a].id, "delete", {});
+      }
       this.state.items = (this.state.items || []).filter(function (i) { return i.pid !== id; });
     }
     this._notify();
@@ -210,6 +255,7 @@
       this.state.clients = [];
     }
     this.state.clients.push(newClient);
+    syncEnqueue("client", newClient.id, "create", newClient);
     this._notify();
     return newClient;
   };
@@ -227,6 +273,7 @@
         }
       }
     }
+    syncEnqueue("client", id, "update", client);
     this._notify();
     return client;
   };
@@ -235,7 +282,8 @@
     var client = this.getClient(id);
     if (!client) return;
     this.state.clients = (this.state.clients || []).filter(function (c) { return c.id !== id; });
-    // unlink references
+    syncEnqueue("client", id, "delete", {});
+
     var items = this.state.items || [];
     for (var i = 0; i < items.length; i++) {
       if (items[i].cid === id) items[i].cid = "";
@@ -259,6 +307,7 @@
       date: new Date().toISOString()
     };
     client.notes.unshift(note);
+    syncEnqueue("client", clientId, "update", { notes: client.notes });
     this._notify();
     return note;
   };
@@ -267,6 +316,7 @@
     var client = this.getClient(clientId);
     if (!client || !Array.isArray(client.notes)) return;
     client.notes = client.notes.filter(function (n) { return n.id !== noteId; });
+    syncEnqueue("client", clientId, "update", { notes: client.notes });
     this._notify();
   };
 
@@ -292,6 +342,7 @@
     });
   };
 
+  /* ---------------------------------------------------------------- items */
   Store.prototype.getItems = function () {
     return this.state.items ? this.state.items.slice() : [];
   };
@@ -319,6 +370,7 @@
     };
 
     this.state.items.push(newItem);
+    syncEnqueue("item", newItem.id, "create", newItem);
     this._notify();
     return newItem;
   };
@@ -331,6 +383,7 @@
         item[key] = updates[key];
       }
     }
+    syncEnqueue("item", id, "update", item);
     this._notify();
     return item;
   };
@@ -339,12 +392,14 @@
     var item = this.getItem(id);
     if (item) {
       item.done = !item.done;
+      syncEnqueue("item", id, "update", { done: item.done });
       this._notify();
     }
   };
 
   Store.prototype.deleteItem = function (id) {
     this.state.items = (this.state.items || []).filter(function (i) { return i.id !== id; });
+    syncEnqueue("item", id, "delete", {});
     this._notify();
   };
 
@@ -433,6 +488,7 @@
     return { total: total, completed: completed, percentage: percentage, open: open };
   };
 
+  /* ---------------------------------------------------------------- categories */
   Store.prototype.getCategories = function () {
     if (!this.state.categories || !Array.isArray(this.state.categories) || this.state.categories.length === 0) {
       this.state.categories = JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []));
@@ -507,6 +563,7 @@
     }
 
     this.state.categories.push(newCat);
+    syncEnqueue("category", newCat.id, "create", newCat);
     this._notify();
     return newCat;
   };
@@ -522,6 +579,7 @@
       cat.color = updates.color;
     }
 
+    syncEnqueue("category", id, "update", cat);
     this._notify();
     return cat;
   };
@@ -532,6 +590,7 @@
     for (var i = 0; i < list.length; i++) {
       if (list[i].kind === id) {
         list[i].kind = reassignTo;
+        syncEnqueue("item", list[i].id, "update", { kind: reassignTo });
       }
     }
 
@@ -539,12 +598,162 @@
       return c.id !== id;
     });
 
+    syncEnqueue("category", id, "delete", {});
     this._notify();
   };
 
   Store.prototype.resetCategories = function () {
     this.state.categories = JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []));
     this._notify();
+  };
+
+  /* ---------------------------------------------------------------- server sync apply */
+  Store.prototype.applyServerChanges = function (serverChanges) {
+    if (!serverChanges) return;
+    var hasUpdates = false;
+
+    // 1. Projects
+    if (Array.isArray(serverChanges.projects) && serverChanges.projects.length > 0) {
+      var currentProjects = this.state.projects || [];
+      for (var p = 0; p < serverChanges.projects.length; p++) {
+        var sp = serverChanges.projects[p];
+        var idx = currentProjects.findIndex(function (item) { return item.id === sp.id; });
+        if (sp.is_deleted) {
+          if (idx !== -1) {
+            currentProjects.splice(idx, 1);
+            hasUpdates = true;
+          }
+        } else {
+          var cleanProj = {
+            id: sp.id,
+            name: sp.name,
+            client: sp.client || "",
+            cid: sp.cid || "",
+            phase: parseInt(sp.phase || "0", 10),
+            due: sp.due || ""
+          };
+          if (idx !== -1) {
+            currentProjects[idx] = cleanProj;
+          } else {
+            currentProjects.push(cleanProj);
+          }
+          hasUpdates = true;
+        }
+      }
+      this.state.projects = currentProjects;
+    }
+
+    // 2. Items
+    if (Array.isArray(serverChanges.items) && serverChanges.items.length > 0) {
+      var currentItems = this.state.items || [];
+      for (var it = 0; it < serverChanges.items.length; it++) {
+        var si = serverChanges.items[it];
+        var itIdx = currentItems.findIndex(function (item) { return item.id === si.id; });
+        if (si.is_deleted) {
+          if (itIdx !== -1) {
+            currentItems.splice(itIdx, 1);
+            hasUpdates = true;
+          }
+        } else {
+          var cleanItem = {
+            id: si.id,
+            title: si.title,
+            kind: si.kind || "task",
+            date: si.date,
+            time: si.time || "",
+            pid: si.pid || "",
+            cid: si.cid || "",
+            who: si.who || "",
+            phone: si.phone || "",
+            done: !!si.done
+          };
+          if (itIdx !== -1) {
+            currentItems[itIdx] = cleanItem;
+          } else {
+            currentItems.push(cleanItem);
+          }
+          hasUpdates = true;
+        }
+      }
+      this.state.items = currentItems;
+    }
+
+    // 3. Clients
+    if (Array.isArray(serverChanges.clients) && serverChanges.clients.length > 0) {
+      var currentClients = this.state.clients || [];
+      for (var cl = 0; cl < serverChanges.clients.length; cl++) {
+        var sc = serverChanges.clients[cl];
+        var clIdx = currentClients.findIndex(function (item) { return item.id === sc.id; });
+        if (sc.is_deleted) {
+          if (clIdx !== -1) {
+            currentClients.splice(clIdx, 1);
+            hasUpdates = true;
+          }
+        } else {
+          var cleanClient = {
+            id: sc.id,
+            name: sc.name,
+            phone: sc.phone || "",
+            email: sc.email || "",
+            company: sc.company || "",
+            notes: Array.isArray(sc.notes) ? sc.notes : []
+          };
+          if (clIdx !== -1) {
+            currentClients[clIdx] = cleanClient;
+          } else {
+            currentClients.push(cleanClient);
+          }
+          hasUpdates = true;
+        }
+      }
+      this.state.clients = currentClients;
+    }
+
+    // 4. Categories
+    if (Array.isArray(serverChanges.categories) && serverChanges.categories.length > 0) {
+      var currentCategories = this.state.categories || [];
+      for (var cat = 0; cat < serverChanges.categories.length; cat++) {
+        var scat = serverChanges.categories[cat];
+        var catIdx = currentCategories.findIndex(function (item) { return item.id === scat.id; });
+        if (scat.is_deleted) {
+          if (catIdx !== -1) {
+            currentCategories.splice(catIdx, 1);
+            hasUpdates = true;
+          }
+        } else {
+          var cleanCat = {
+            id: scat.id,
+            label: scat.label,
+            color: scat.color || "#1f6355",
+            colorClass: scat.colorClass || "tag-custom"
+          };
+          if (catIdx !== -1) {
+            currentCategories[catIdx] = cleanCat;
+          } else {
+            currentCategories.push(cleanCat);
+          }
+          hasUpdates = true;
+        }
+      }
+      this.state.categories = currentCategories;
+    }
+
+    // 5. Settings
+    if (serverChanges.settings && typeof serverChanges.settings === "object") {
+      if (serverChanges.settings.weekStartDay) {
+        this.state.weekStartDay = serverChanges.settings.weekStartDay;
+        localStorage.setItem(WEEK_START_KEY, serverChanges.settings.weekStartDay);
+        hasUpdates = true;
+      }
+      if (serverChanges.settings.theme) {
+        this.state.theme = serverChanges.settings.theme;
+        hasUpdates = true;
+      }
+    }
+
+    if (hasUpdates) {
+      this._notify();
+    }
   };
 
   Store.prototype.exportData = function () {
@@ -560,6 +769,7 @@
       this.state = {
         version: 2,
         theme: parsed.theme || "auto",
+        weekStartDay: parsed.weekStartDay || localStorage.getItem(WEEK_START_KEY) || "saturday",
         clients: Array.isArray(parsed.clients) ? parsed.clients : [],
         projects: parsed.projects,
         items: parsed.items,
@@ -574,6 +784,7 @@
 
   Store.prototype.resetDefaults = function () {
     this.state = T.getInitialSeedData();
+    this.state.weekStartDay = "saturday";
     this._notify();
   };
 

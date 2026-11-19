@@ -1225,3 +1225,906 @@ textarea.form-control {
   margin-bottom: 18px;
   line-height: 1.6;
 }
+
+
+/* ==========================================================================
+   Sync, Auth, Weekly Calendar & Conflict Resolution Styles
+   Integrated with Unified Architectural Theme (Light & Dark)
+   ========================================================================== */
+
+/* Sync Status Pill Button in Header */
+.btn-sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-line);
+  background: var(--bg-surface);
+  color: var(--ink-secondary);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-sync-status:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-strong);
+  color: var(--ink-primary);
+  transform: translateY(-1px);
+}
+
+.sync-bullet {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.btn-sync-status.is-online .sync-bullet {
+  background-color: var(--color-success);
+  box-shadow: 0 0 8px var(--color-success);
+}
+
+.btn-sync-status.is-online {
+  color: var(--ink-primary);
+}
+
+.btn-sync-status.is-offline .sync-bullet {
+  background-color: var(--color-brass);
+  box-shadow: 0 0 6px var(--color-brass);
+}
+
+.btn-sync-status.is-offline {
+  color: var(--ink-secondary);
+}
+
+.btn-sync-status.is-syncing .sync-bullet {
+  background-color: var(--color-info);
+  animation: pulse-sync 1.2s infinite ease-in-out;
+}
+
+@keyframes pulse-sync {
+  0%, 100% { transform: scale(0.85); opacity: 0.6; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+/* Conflict Alert Pill Button in Header */
+.btn-conflict-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-late-border);
+  background: var(--color-late-light);
+  color: var(--color-late);
+  cursor: pointer;
+  white-space: nowrap;
+  animation: pulse-warning 2.2s infinite ease-in-out;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* User Profile Button in Header */
+.btn-user-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-line);
+  background: var(--bg-surface);
+  color: var(--ink-secondary);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-user-profile:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-strong);
+  color: var(--ink-primary);
+  transform: translateY(-1px);
+}
+
+/* Weekly Calendar Bar in Agenda */
+.weekly-calendar-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.week-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.week-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 34px;
+  padding: 0 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.week-nav-btn:hover {
+  background: var(--bg-chip-hover);
+  border-color: var(--border-strong);
+}
+
+.week-info-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+}
+
+.week-info-badge.is-current-week {
+  background: var(--accent-light);
+  border-color: var(--accent-border);
+}
+
+.week-number-pill {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--accent-primary);
+}
+
+.week-range-text {
+  font-size: 0.82rem;
+  color: var(--ink-secondary);
+  font-weight: 500;
+}
+
+.week-today-btn {
+  height: 34px;
+  padding: 0 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.week-today-btn:hover {
+  background: var(--accent-primary);
+  color: var(--accent-text);
+}
+
+.week-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.week-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-pill);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.week-filter-toggle.active {
+  background: var(--accent-primary);
+  color: var(--accent-text);
+  border-color: var(--accent-primary);
+}
+
+.week-start-selector-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+.week-start-select {
+  height: 34px;
+  padding: 0 8px;
+  font-size: 0.82rem;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--ink-primary);
+}
+
+/* Online Required Notice Banner */
+.online-auth-notice {
+  background: var(--color-info-light);
+  border: 1px solid var(--color-info-border);
+  color: var(--ink-primary);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.online-auth-notice-text {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ink-primary);
+}
+
+.online-auth-notice-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Studio Dialog Extra Widths */
+.dialog-large {
+  width: min(780px, calc(100vw - 28px)) !important;
+}
+
+.dialog-medium {
+  width: min(480px, calc(100vw - 28px)) !important;
+}
+
+/* Conflict Review Items */
+.conflict-item-card {
+  border: 1px solid var(--color-late-border);
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.conflict-card-header {
+  margin-bottom: 12px;
+}
+
+.conflict-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--color-late-light);
+  color: var(--color-late);
+  border-radius: var(--radius-xs);
+  margin-bottom: 6px;
+}
+
+.conflict-item-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--ink-primary);
+}
+
+.conflict-msg-text {
+  font-size: 0.85rem;
+  color: var(--color-late);
+}
+
+.conflict-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 600px) {
+  .conflict-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.conflict-side {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.client-side {
+  background: var(--color-brass-light);
+  border: 1px solid var(--color-brass-border);
+}
+
+.server-side {
+  background: var(--color-success-light);
+  border: 1px solid var(--color-success-border);
+}
+
+.side-badge {
+  font-weight: 700;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+}
+
+.offline-badge { color: var(--color-brass); }
+.online-badge { color: var(--color-success); }
+
+.side-meta {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  margin-bottom: 8px;
+}
+
+.side-data .data-row {
+  margin-bottom: 4px;
+  color: var(--ink-primary);
+}
+
+.conflict-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-line);
+}
+
+.actions-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-secondary);
+}
+
+.btn-resolve {
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.btn-keep-local {
+  background: var(--color-brass);
+  color: #ffffff;
+}
+.btn-keep-local:hover { opacity: 0.9; }
+
+.btn-keep-server {
+  background: var(--color-success);
+  color: #ffffff;
+}
+.btn-keep-server:hover { opacity: 0.9; }
+
+.btn-keep-both {
+  background: var(--bg-subtle);
+  color: var(--ink-primary);
+  border-color: var(--border-line);
+}
+.btn-keep-both:hover { background: var(--bg-chip-hover); }
+
+.conflict-resolved-msg {
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-success);
+  background: var(--color-success-light);
+  border-radius: var(--radius-sm);
+}
+
+/* Auth Modal Styles */
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-line);
+  margin-bottom: 20px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.auth-tab-btn.active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+.auth-error-msg {
+  padding: 10px 14px;
+  background: var(--color-late-light);
+  border: 1px solid var(--color-late-border);
+  color: var(--color-late);
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+
+.auth-hint {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  text-align: center;
+  margin-top: 12px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.auth-profile-box {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.user-avatar-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: var(--accent-text);
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.user-profile-name {
+  font-size: 1.25rem;
+  margin-bottom: 6px;
+  color: var(--ink-primary);
+}
+
+.user-profile-meta {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.user-role-badge, .user-username-badge {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  color: var(--ink-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.auth-sync-status-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-line);
+  padding: 14px;
+  border-radius: var(--radius-md);
+  margin: 18px 0;
+  text-align: right;
+  font-size: 0.88rem;
+}
+
+.status-indicator-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--ink-primary);
+}
+
+.auth-profile-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Change Log Audit Table */
+.log-metrics-summary {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.metric-pill {
+  padding: 6px 14px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  color: var(--ink-primary);
+}
+.online-pill { color: var(--color-success); border-color: var(--color-success-border); }
+.offline-pill { color: var(--color-brass); border-color: var(--color-brass-border); }
+.conflict-pill { color: var(--color-late); border-color: var(--color-late-border); font-weight: 700; }
+
+.log-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-md);
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  text-align: right;
+  background: var(--bg-surface);
+}
+
+.log-table th, .log-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-line);
+}
+
+.log-table th {
+  background: var(--bg-subtle);
+  color: var(--ink-primary);
+  font-weight: 700;
+}
+
+.source-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.source-offline { background: var(--color-brass-light); color: var(--color-brass); border: 1px solid var(--color-brass-border); }
+.source-online { background: var(--color-success-light); color: var(--color-success); border: 1px solid var(--color-success-border); }
+
+.status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 0.75rem;
+}
+.status-applied { background: var(--bg-subtle); color: var(--ink-secondary); }
+.status-conflict { background: var(--color-late-light); color: var(--color-late); font-weight: 700; border: 1px solid var(--color-late-border); }
+.status-resolved { background: var(--color-success-light); color: var(--color-success); }
+
+.setting-status-box {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-line);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin: 12px 0 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+
+/* ==========================================================================
+   Universal Form Input, Select & High-Contrast Design System
+   Fixes contrast, invisible texts, dark-mode options & form controls
+   ========================================================================== */
+
+.form-control,
+.form-input {
+  width: 100%;
+  height: 42px;
+  padding: 9px 13px;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--ink-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.form-control:focus,
+.form-input:focus {
+  border-color: var(--accent-primary);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+  outline: none;
+}
+
+select.form-control,
+select.form-input,
+select {
+  background-color: var(--bg-surface) !important;
+  color: var(--ink-primary) !important;
+  cursor: pointer;
+}
+
+select option {
+  background-color: var(--bg-surface) !important;
+  color: var(--ink-primary) !important;
+  padding: 8px 12px;
+}
+
+[data-theme="dark"] select,
+[data-theme="dark"] select.form-control,
+[data-theme="dark"] select.form-input {
+  background-color: #151d1c !important;
+  color: #edf4f2 !important;
+}
+
+[data-theme="dark"] select option {
+  background-color: #151d1c !important;
+  color: #edf4f2 !important;
+}
+
+::placeholder {
+  color: var(--ink-muted) !important;
+  opacity: 0.85;
+}
+
+/* Conflict Modal High-Contrast Decision Buttons */
+.btn-keep-local {
+  background: #966a24 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border: 1px solid #7a551a !important;
+}
+
+[data-theme="dark"] .btn-keep-local {
+  background: #d9b168 !important;
+  color: #15120a !important;
+  border-color: #eed08d !important;
+}
+
+.btn-keep-server {
+  background: #1c814e !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border: 1px solid #14613b !important;
+}
+
+[data-theme="dark"] .btn-keep-server {
+  background: #48bb78 !important;
+  color: #07190f !important;
+  border-color: #6ee7a4 !important;
+}
+
+.btn-keep-both {
+  background: var(--bg-surface) !important;
+  color: var(--ink-primary) !important;
+  border: 1px solid var(--border-strong) !important;
+  font-weight: 600 !important;
+}
+
+/* Audit Log Table Contrast */
+[data-theme="dark"] .log-table th {
+  background: #1c2725 !important;
+  color: #edf4f2 !important;
+}
+
+[data-theme="dark"] .log-table td {
+  color: #d1deda !important;
+}
+
+[data-theme="dark"] .source-offline {
+  background: #2b2311 !important;
+  color: #e5b65a !important;
+  border: 1px solid rgba(217, 177, 104, 0.4) !important;
+}
+
+[data-theme="dark"] .source-online {
+  background: #132a1d !important;
+  color: #48bb78 !important;
+  border: 1px solid rgba(72, 187, 120, 0.4) !important;
+}
+
+[data-theme="dark"] .status-applied {
+  background: #202c2a !important;
+  color: #c4d7d2 !important;
+}
+
+[data-theme="dark"] .status-conflict {
+  background: #321918 !important;
+  color: #f07b74 !important;
+  border: 1px solid rgba(235, 107, 99, 0.4) !important;
+}
+
+[data-theme="dark"] .client-side {
+  background: #241d10 !important;
+  border: 1px solid rgba(217, 177, 104, 0.35) !important;
+}
+
+[data-theme="dark"] .server-side {
+  background: #10251a !important;
+  border: 1px solid rgba(72, 187, 120, 0.35) !important;
+}
+
+/* ==========================================================================
+   Mandatory Authentication Gate (Auth Portal for Web/Online)
+   ========================================================================== */
+.auth-gate-wrapper {
+  max-width: 520px;
+  margin: 36px auto 60px auto;
+  padding: 0 16px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.auth-gate-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-xl);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-dialog);
+}
+
+.auth-gate-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-gate-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-lg);
+  background: var(--accent-light);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px auto;
+}
+
+.auth-gate-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.auth-gate-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--ink-primary);
+  margin-bottom: 6px;
+}
+
+.auth-gate-subtitle {
+  font-size: 0.9rem;
+  color: var(--ink-secondary);
+  line-height: 1.4;
+}
+
+.auth-gate-notice {
+  background: var(--color-info-light);
+  border: 1px solid var(--color-info-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink-primary);
+}
+
+.auth-notice-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.auth-local-claim-box {
+  background: var(--color-brass-light);
+  border: 1px solid var(--color-brass-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink-primary);
+}
+
+.claim-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.gate-credentials-hint {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+.gate-credentials-hint code {
+  background: var(--bg-subtle);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.auth-gate-footer {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.standalone-tip {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.standalone-tip span {
+  font-weight: 600;
+  color: var(--ink-secondary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+
+/* ==========================================================================
+   Auth Locked Rules (Mandatory Web Access Control)
+   ========================================================================== */
+body.auth-locked .main-nav,
+body.auth-locked .toolbar-section,
+body.auth-locked #viewContainer,
+body.auth-locked .settings-grid,
+body.auth-locked .speed-dial-container,
+body.auth-locked .stats-container,
+body.auth-locked .app-header .header-actions button:not(#themeToggleBtn) {
+  display: none !important;
+}
+
+body.auth-locked .app-header {
+  border-bottom: none;
+  margin-bottom: 0;
+  justify-content: space-between;
+}

@@ -1,5 +1,5 @@
 /**
- * Main Application Controller (Universal, Multi-Page, 100% Local)
+ * Main Application Controller (Universal, Multi-Page, 100% Local, Offline-First & MySQL Sync)
  */
 (function (global) {
   "use strict";
@@ -12,6 +12,10 @@
   var AgendaV = global.StudioAgendaView;
   var KanbanV = global.StudioKanbanView;
   var ClientsV = global.StudioClientsView;
+  var CW = global.StudioCalendarWeek;
+  var Sync = global.StudioSync;
+  var Auth = global.StudioAuth;
+  var AuthGate = global.StudioAuthGate;
 
   function App() {
     this.page = document.body.dataset.page || "agenda";
@@ -41,25 +45,74 @@
       importDataInput: document.getElementById("importDataInput"),
       requestPermBtn: document.getElementById("requestPermBtn"),
       testChimeBtn: document.getElementById("testChimeBtn"),
-      testNotifBtn: document.getElementById("testNotifBtn")
+      testNotifBtn: document.getElementById("testNotifBtn"),
+      // New Sync & Auth Elements
+      syncStatusBtn: document.getElementById("syncStatusBtn"),
+      syncStatusBullet: document.getElementById("syncStatusBullet"),
+      syncStatusText: document.getElementById("syncStatusText"),
+      conflictAlertBtn: document.getElementById("conflictAlertBtn"),
+      conflictAlertCount: document.getElementById("conflictAlertCount"),
+      userProfileBtn: document.getElementById("userProfileBtn"),
+      userProfileName: document.getElementById("userProfileName"),
+      // Settings specific elements
+      settingsWeekStartSelect: document.getElementById("settingsWeekStartSelect"),
+      openChangeLogBtn: document.getElementById("openChangeLogBtn"),
+      settingsSyncNowBtn: document.getElementById("settingsSyncNowBtn"),
+      settingsAuthManageBtn: document.getElementById("settingsAuthManageBtn")
     };
   }
 
   App.prototype.init = function () {
+    global.StudioAppInstance = this;
+    if (global.StudioRouter) global.StudioRouter.init();
     this.initTheme();
     this.initPWA();
     if (N) N.startScheduler();
+
+    var self = this;
+
+    // Initialize Auth Gate (Blocks web access if unauthenticated)
+    if (AuthGate) {
+      AuthGate.init();
+    }
 
     this.bindEvents();
     if (this.page === "projects") {
       this.bindDragAndDrop();
     }
 
-    var self = this;
+    // Subscribe to Store updates
     S.subscribe(function () {
       self.render();
       self.updateNotificationBadge();
     });
+
+    // Subscribe to Auth updates
+    if (Auth) {
+      Auth.subscribe(function (user) {
+        self.updateAuthUI(user);
+        if (AuthGate) {
+          AuthGate.checkGate();
+        }
+      });
+      Auth.verifySession();
+    }
+
+    // Subscribe to Sync updates
+    if (Sync) {
+      Sync.subscribe(function (state) {
+        self.updateSyncUI(state);
+        if (AuthGate) {
+          AuthGate.checkGate();
+        }
+      });
+      this.updateSyncUI({
+        isOnline: Sync.isOnline,
+        isSyncing: Sync.isSyncing,
+        conflictsCount: Sync.conflicts.length,
+        pendingCount: Sync.queue.length
+      });
+    }
 
     this.render();
     this.updateNotificationBadge();
@@ -69,7 +122,6 @@
      PWA Service Worker & Install Prompt
      ------------------------------------------------------------------------ */
   App.prototype.initPWA = function () {
-    // Only register serviceWorker if served over http/https (PWA standard)
     if (window.location.protocol.indexOf("http") === 0 && "serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("./sw.js").then(function (reg) {
@@ -99,6 +151,172 @@
   };
 
   /* ------------------------------------------------------------------------
+     Sync & Auth UI Status
+     ------------------------------------------------------------------------ */
+  App.prototype.updateSyncUI = function (state) {
+    if (!state) return;
+    var isOnline = state.isOnline;
+    var isSyncing = state.isSyncing;
+    var conflictsCount = state.conflictsCount || 0;
+    var pendingCount = state.pendingCount || 0;
+    var isLoggedIn = state.isLoggedIn;
+
+    // 1. Sync button pill
+    if (this.dom.syncStatusBtn) {
+      this.dom.syncStatusBtn.classList.remove("is-online", "is-offline", "is-syncing");
+      if (isSyncing) {
+        this.dom.syncStatusBtn.classList.add("is-syncing");
+        if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = "جاري المزامنة...";
+      } else if (isOnline) {
+        if (!isLoggedIn) {
+          this.dom.syncStatusBtn.classList.add("is-offline");
+          if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = "أونلاين (يلزم تسجيل الدخول)";
+        } else {
+          this.dom.syncStatusBtn.classList.add("is-online");
+          var text = "متصل";
+          if (pendingCount > 0) text += " (" + pendingCount + ")";
+          if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = text;
+        }
+      } else {
+        this.dom.syncStatusBtn.classList.add("is-offline");
+        var offlineText = "وضع محلي (أوفلاين)";
+        if (pendingCount > 0) offlineText += " (" + pendingCount + " معلق)";
+        if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = offlineText;
+      }
+    }
+
+    // 2. Conflict Alert Badge
+    if (this.dom.conflictAlertBtn) {
+      if (conflictsCount > 0) {
+        this.dom.conflictAlertBtn.style.display = "inline-flex";
+        if (this.dom.conflictAlertCount) {
+          this.dom.conflictAlertCount.textContent = conflictsCount;
+        }
+      } else {
+        this.dom.conflictAlertBtn.style.display = "none";
+      }
+    }
+
+    // 3. Settings status elements if on settings page
+    var settingSyncStatusEl = document.getElementById("settingSyncStatus");
+    if (settingSyncStatusEl) {
+      if (isOnline) {
+        settingSyncStatusEl.innerHTML = isLoggedIn
+          ? '<span class="status-badge is-online">🟢 متصل بقاعدة بيانات MySQL (تم تسجيل الدخول)</span>'
+          : '<span class="status-badge is-offline" style="color:var(--color-brass);">🟠 متصل بالنت لكن يلزم تسجيل الدخول للمزامنة</span>';
+      } else {
+        settingSyncStatusEl.innerHTML = '<span class="status-badge is-offline">💻 وضع العمل المحلي (أوفلاين 100%)</span>';
+      }
+    }
+    var settingPendingCountEl = document.getElementById("settingPendingCount");
+    if (settingPendingCountEl) {
+      settingPendingCountEl.textContent = pendingCount;
+    }
+  };
+
+  App.prototype.updateAuthUI = function (user) {
+    if (this.dom.userProfileName) {
+      if (user && (user.name || user.username)) {
+        this.dom.userProfileName.textContent = user.name || user.username;
+      } else {
+        this.dom.userProfileName.textContent = "تسجيل الدخول";
+      }
+    }
+
+    var settingUserNameEl = document.getElementById("settingUserName");
+    if (settingUserNameEl) {
+      if (user) {
+        settingUserNameEl.textContent = (user.name || user.username) + " (" + (user.role === "admin" ? "مدير" : "مستخدم") + ")";
+      } else {
+        settingUserNameEl.textContent = "غير مسجل دخول (حساب محلي)";
+      }
+    }
+
+    if (this.page === "settings") {
+      this.renderAdminUsersPanel(user);
+    }
+  };
+
+  App.prototype.renderAdminUsersPanel = function (user) {
+    var existing = document.getElementById("adminUsersPanel");
+    if (user && user.role === "admin") {
+      if (!existing) {
+        var grid = document.querySelector(".settings-grid");
+        if (!grid) return;
+        existing = document.createElement("section");
+        existing.id = "adminUsersPanel";
+        existing.className = "setting-card";
+        existing.innerHTML = '<h3 class="setting-card-title">👥 إدارة المستخدمين والصلاحيات</h3>' +
+          '<p class="setting-card-desc">هذه اللوحة متاحة للمدير فقط. يمكنك تغيير دور المستخدم مع الحفاظ على عزل بيانات كل حساب.</p>' +
+          '<div id="adminUsersStatus" class="setting-status-box">جاري تحميل المستخدمين...</div>';
+        grid.appendChild(existing);
+      }
+      this.loadAdminUsers();
+    } else if (existing) {
+      existing.remove();
+    }
+  };
+
+  App.prototype.loadAdminUsers = function () {
+    var status = document.getElementById("adminUsersStatus");
+    if (!status || !Auth || !Auth.getToken()) return;
+    var self = this;
+    var fetcher = U && U.safeFetchJson
+      ? U.safeFetchJson("/api/auth/list_users", { headers: { "Authorization": "Bearer " + Auth.getToken() } })
+      : fetch("/api/auth/list_users", { headers: { "Authorization": "Bearer " + Auth.getToken() } }).then(function (r) { return r.json(); });
+    fetcher.then(function (data) {
+      if (!data || !data.success) throw new Error((data && data.error) || "تعذر تحميل المستخدمين");
+      var roles = [
+        ["admin", "مدير"], ["manager", "مدير مشاريع"], ["editor", "محرر"],
+        ["viewer", "مشاهد"], ["user", "مستخدم"]
+      ];
+      status.innerHTML = data.users.map(function (item) {
+        var options = roles.map(function (role) {
+          return '<option value="' + role[0] + '"' + (item.role === role[0] ? " selected" : "") + '>' + role[1] + '</option>';
+        }).join("");
+        return '<div class="admin-user-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-subtle);">' +
+          '<span><strong>' + U.escapeHtml(item.name || item.username) + '</strong><small style="display:block;color:var(--ink-muted);">' + U.escapeHtml(item.username) + '</small></span>' +
+          '<select class="form-control admin-role-select" data-user-id="' + item.id + '" style="max-width:170px;">' + options + '</select></div>';
+      }).join("") || '<span style="color:var(--ink-muted);">لا يوجد مستخدمون.</span>';
+      status.querySelectorAll(".admin-role-select").forEach(function (select) {
+        select.addEventListener("change", function () {
+          self.updateUserRole(select);
+        });
+      });
+    }).catch(function (error) {
+      status.textContent = error.message || "تعذر تحميل المستخدمين";
+    });
+  };
+
+  App.prototype.updateUserRole = function (select) {
+    var self = this;
+    var previous = select.getAttribute("data-previous") || select.value;
+    select.disabled = true;
+    var options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + Auth.getToken(),
+        "X-CSRF-Token": Auth.getCsrfToken ? Auth.getCsrfToken() : ""
+      },
+      credentials: "include",
+      body: JSON.stringify({ user_id: Number(select.getAttribute("data-user-id")), role: select.value })
+    };
+    var fetcher = U && U.safeFetchJson ? U.safeFetchJson("/api/auth/update_role", options) : fetch("/api/auth/update_role", options).then(function (r) { return r.json(); });
+    fetcher.then(function (data) {
+      if (!data || !data.success) throw new Error((data && data.error) || "تعذر تحديث الدور");
+      select.setAttribute("data-previous", select.value);
+      if (M && M.showToast) M.showToast("تم تحديث صلاحية المستخدم بنجاح", "success");
+    }).catch(function (error) {
+      select.value = previous;
+      if (M && M.showToast) M.showToast(error.message || "تعذر تحديث الدور", "error");
+    }).finally(function () {
+      select.disabled = false;
+      self.loadAdminUsers();
+    });
+  };
+
+  /* ------------------------------------------------------------------------
      Notifications Badge
      ------------------------------------------------------------------------ */
   App.prototype.updateNotificationBadge = function () {
@@ -121,15 +339,6 @@
   App.prototype.initTheme = function () {
     var savedTheme = S.getTheme();
     this.applyTheme(savedTheme);
-
-    var self = this;
-    if (window.matchMedia) {
-      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) {
-        if (S.getTheme() === "auto") {
-          document.documentElement.setAttribute("data-theme", e.matches ? "dark" : "light");
-        }
-      });
-    }
   };
 
   App.prototype.applyTheme = function (theme) {
@@ -144,8 +353,7 @@
 
   App.prototype.toggleTheme = function () {
     var current = S.getTheme();
-    var nextTheme = "light";
-
+    var nextTheme = "dark";
     if (current === "light") {
       nextTheme = "dark";
     } else if (current === "dark") {
@@ -164,12 +372,15 @@
      Rendering Current Page
      ------------------------------------------------------------------------ */
   App.prototype.render = function () {
-    // 1. Render Header Stats & Date
+    if (AuthGate && AuthGate.shouldLock()) {
+      AuthGate.checkGate();
+      return;
+    }
+
     if (StatsV) {
       StatsV.renderStats(this.dom.statsContainer, this.dom.todayDate);
     }
 
-    // 2. Render Page Specific Content
     if (this.page === "agenda" && AgendaV && this.dom.viewContainer) {
       this.dom.viewContainer.innerHTML = AgendaV.renderAgendaView({
         activeFilter: this.activeFilter,
@@ -213,7 +424,6 @@
       });
     }
 
-    // 3. Update clear search button
     if (this.dom.searchClear) {
       if (this.searchQuery) {
         this.dom.searchClear.classList.add("visible");
@@ -264,32 +474,58 @@
       });
     }
 
-    if (this.dom.requestPermBtn) {
-      this.dom.requestPermBtn.addEventListener("click", function () {
-        N.requestPermission(function (granted) {
-          M.openNotificationModal();
-          if (granted) {
-            M.showToast("تم تفعيل إشعارات سطح المكتب بنجاح!", "success");
-            N.sendNotification("مفكرة الاستوديو", {
-              body: "الإشعارات جاهزة للتنبيه بمواعيدك وتسليماتك القادمة."
-            });
+    // Auth Profile & Modal trigger
+    if (this.dom.userProfileBtn) {
+      this.dom.userProfileBtn.addEventListener("click", function () {
+        if (global.StudioAuthModal) {
+          global.StudioAuthModal.openAuthModal();
+        }
+      });
+    }
+
+    // Sync button manual trigger
+    if (this.dom.syncStatusBtn) {
+      this.dom.syncStatusBtn.addEventListener("click", function () {
+        if (!Auth || !Auth.isLoggedIn()) {
+          if (Sync && Sync.isOnline) {
+            M.showToast("للمزامنة والعمل أونلاين، يجب تسجيل الدخول أو إنشاء حسابك.", "info");
+            if (global.StudioAuthModal) {
+              global.StudioAuthModal.openAuthModal(true);
+            }
           } else {
-            M.showToast("لم يتم منح الإذن بالإشعارات.", "info");
+            M.showToast("أنت تعمل حالياً في وضع العمل المحلي بدون إنترنت 100%.", "info");
           }
-        });
+          return;
+        }
+
+        if (Sync) {
+          M.showToast("جاري التحقق من المزامنة مع قاعدة البيانات...", "info");
+          Sync.sync().then(function (res) {
+            if (res && res.auth_required) {
+              if (global.StudioAuthModal) global.StudioAuthModal.openAuthModal(true);
+            } else {
+              M.showToast("تم تحديث المزامنة بنجاح", "success");
+            }
+          });
+        }
       });
     }
 
-    if (this.dom.testChimeBtn) {
-      this.dom.testChimeBtn.addEventListener("click", function () {
-        N.playChime();
-        M.showToast("🔊 تم تشغيل نغمة الاستوديو الهادئة", "info");
-      });
-    }
+    // Agenda online auth prompt button
+    document.addEventListener("click", function (e) {
+      if (e.target.closest("#agendaAuthPromptBtn")) {
+        if (global.StudioAuthModal) {
+          global.StudioAuthModal.openAuthModal(true);
+        }
+      }
+    });
 
-    if (this.dom.testNotifBtn) {
-      this.dom.testNotifBtn.addEventListener("click", function () {
-        N.testNotification();
+    // Conflict Review Modal Trigger
+    if (this.dom.conflictAlertBtn) {
+      this.dom.conflictAlertBtn.addEventListener("click", function () {
+        if (global.StudioConflictModal) {
+          global.StudioConflictModal.openConflictModal();
+        }
       });
     }
 
@@ -393,7 +629,7 @@
       });
     }
 
-    // Close dialog buttons
+    // Global click handlers
     document.addEventListener("click", function (e) {
       var closeBtn = e.target.closest("[data-dialog-close]");
       if (closeBtn) {
@@ -401,14 +637,12 @@
         if (dialog) dialog.close();
       }
 
-      // Open Category Manager triggers
       var catOpenTrigger = e.target.closest("#openCategoryManagerBtn, #settingsOpenCategoryManagerBtn, #taskModalAddCategoryBtn, [data-action='open-category-manager']");
       if (catOpenTrigger) {
         M.openCategoryManagerModal();
         return;
       }
 
-      // Category color swatch selection
       var swatchBtn = e.target.closest(".color-swatch-btn");
       if (swatchBtn && swatchBtn.closest("#catColorSwatches")) {
         var color = swatchBtn.getAttribute("data-color");
@@ -418,19 +652,16 @@
         return;
       }
 
-      // Submit category form
       if (e.target.closest("#catSubmitBtn")) {
         M.saveCategoryFromForm();
         return;
       }
 
-      // Cancel category edit
       if (e.target.closest("#catCancelEditBtn")) {
         M.cancelEditCategory();
         return;
       }
 
-      // Edit category row
       var editCatBtn = e.target.closest('[data-cat-action="edit"]');
       if (editCatBtn) {
         var catId = editCatBtn.getAttribute("data-id");
@@ -438,7 +669,6 @@
         return;
       }
 
-      // Delete category row
       var deleteCatBtn = e.target.closest('[data-cat-action="delete"]');
       if (deleteCatBtn) {
         var delCatId = deleteCatBtn.getAttribute("data-id");
@@ -446,7 +676,6 @@
         return;
       }
 
-      // Restore default categories
       if (e.target.closest("#catRestoreDefaultsBtn")) {
         M.resetCategoriesWithConfirm();
         return;
@@ -485,6 +714,35 @@
       });
 
       this.dom.viewContainer.addEventListener("click", function (e) {
+        // Weekly Calendar Actions
+        var prevWeekBtn = e.target.closest('[data-action="prev-week"]');
+        if (prevWeekBtn && CW) {
+          CW.currentWeekOffset--;
+          self.render();
+          return;
+        }
+
+        var nextWeekBtn = e.target.closest('[data-action="next-week"]');
+        if (nextWeekBtn && CW) {
+          CW.currentWeekOffset++;
+          self.render();
+          return;
+        }
+
+        var currentWeekBtn = e.target.closest('[data-action="current-week"]');
+        if (currentWeekBtn && CW) {
+          CW.currentWeekOffset = 0;
+          self.render();
+          return;
+        }
+
+        var toggleWeekFilterBtn = e.target.closest('[data-action="toggle-week-filter"]');
+        if (toggleWeekFilterBtn && CW) {
+          CW.filterByWeek = !CW.filterByWeek;
+          self.render();
+          return;
+        }
+
         var phaseTab = e.target.closest("[data-phase-tab]");
         if (phaseTab) {
           var targetPhase = phaseTab.dataset.phaseTab;
@@ -598,6 +856,14 @@
           M.showToast("تم تحديث مرحلة المشروع", "success");
           return;
         }
+
+        var weekStartChange = e.target.closest('[data-action="change-week-start"]');
+        if (weekStartChange) {
+          S.setWeekStartDay(weekStartChange.value);
+          self.render();
+          M.showToast("تم تحديث بداية الأسبوع", "info");
+          return;
+        }
       });
     }
 
@@ -628,6 +894,49 @@
         M.showToast("تم تفعيل المظهر التلقائي وفق النظام", "info");
       });
     }
+
+    if (this.dom.settingsWeekStartSelect) {
+      this.dom.settingsWeekStartSelect.value = S.getWeekStartDay();
+      this.dom.settingsWeekStartSelect.addEventListener("change", function (e) {
+        S.setWeekStartDay(e.target.value);
+        M.showToast("تم حفظ بداية الأسبوع بنجاح", "success");
+      });
+    }
+
+    if (this.dom.openChangeLogBtn) {
+      this.dom.openChangeLogBtn.addEventListener("click", function () {
+        if (global.StudioChangeLogModal) {
+          global.StudioChangeLogModal.openChangeLogModal();
+        }
+      });
+    }
+
+    if (this.dom.settingsSyncNowBtn) {
+      this.dom.settingsSyncNowBtn.addEventListener("click", function () {
+        if (Sync) {
+          self.dom.settingsSyncNowBtn.disabled = true;
+          self.dom.settingsSyncNowBtn.textContent = "جاري المزامنة...";
+          Sync.sync().then(function () {
+            self.dom.settingsSyncNowBtn.disabled = false;
+            self.dom.settingsSyncNowBtn.textContent = "🔄 مزامنة فورية الآن";
+            M.showToast("تمت المزامنة مع قاعدة البيانات بنجاح", "success");
+          }).catch(function (err) {
+            self.dom.settingsSyncNowBtn.disabled = false;
+            self.dom.settingsSyncNowBtn.textContent = "🔄 مزامنة فورية الآن";
+            M.showToast("تعذرت المزامنة: " + err.message, "error");
+          });
+        }
+      });
+    }
+
+    if (this.dom.settingsAuthManageBtn) {
+      this.dom.settingsAuthManageBtn.addEventListener("click", function () {
+        if (global.StudioAuthModal) {
+          global.StudioAuthModal.openAuthModal();
+        }
+      });
+    }
+
     if (resetDataBtn) {
       resetDataBtn.addEventListener("click", function () {
         M.openConfirmModal({
@@ -727,7 +1036,6 @@
     });
   };
 
-  // Launch when DOM is ready
   document.addEventListener("DOMContentLoaded", function () {
     var app = new App();
     app.init();
