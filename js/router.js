@@ -8,7 +8,8 @@
   var routes = {
     agenda: "/",
     projects: "/projects",
-    clients: "/clients",
+    kanban: "/kanban",
+    entities: "/entities",
     settings: "/settings",
     guide: "/guide"
   };
@@ -22,6 +23,10 @@
     return routes[key] || routes.agenda;
   }
 
+  function normalizeLegacyPath() {
+    if (window.location.pathname === "/clients") window.history.replaceState({}, "", "/entities");
+  }
+
   function markActive() {
     var current = getPageKey();
     document.querySelectorAll(".nav-tab[data-route]").forEach(function (link) {
@@ -33,6 +38,7 @@
 
   function init() {
     markActive();
+    normalizeLegacyPath();
     document.addEventListener("click", function (event) {
       var link = event.target.closest("a[data-route]");
       if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

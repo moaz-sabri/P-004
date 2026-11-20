@@ -17,6 +17,19 @@
   scrollbar-width: none;
 }
 
+.kanban-toolbar { display:flex; align-items:center; gap:10px; margin:0 0 16px; padding:14px 16px; border:1px solid var(--border-line); border-radius:var(--radius-lg); background:var(--bg-surface); box-shadow:var(--shadow-xs); }
+.kanban-toolbar-copy { display:flex; flex-direction:column; gap:2px; flex:1; }
+.kanban-toolbar-copy strong { font-size:.96rem; }
+.kanban-toolbar-copy small { color:var(--ink-muted); font-size:.78rem; }
+.toolbar-eyebrow { color:var(--accent-primary); font-size:.7rem; font-weight:800; }
+.col-title { flex:1; justify-content:space-between; }
+.col-actions { display:flex; gap:2px; opacity:.55; transition:opacity var(--transition-fast); }
+.kanban-col:hover .col-actions, .col-actions:focus-within { opacity:1; }
+.col-actions .btn-icon { width:28px; height:28px; }
+.column-dialog-form { min-width:min(360px, calc(100vw - 40px)); }
+.column-dialog-form > label { display:block; margin:14px 0 6px; font-weight:700; font-size:.84rem; }
+@media (max-width:560px) { .kanban-toolbar { align-items:stretch; flex-wrap:wrap; } .kanban-toolbar-copy { flex-basis:100%; } }
+
 .kanban-mobile-tabs::-webkit-scrollbar {
   display: none;
 }

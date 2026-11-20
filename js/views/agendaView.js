@@ -42,7 +42,10 @@
       : '<label class="task-checkbox-label"><input type="checkbox" class="task-checkbox" data-action="toggle-item" data-id="' + item.id + '" ' + (item.done ? "checked" : "") + ' aria-label="تحديد كمكتمل"></label>';
 
     var actionsHtml = isProjMilestone
-      ? ""
+      ? '<div class="task-actions">' +
+        '  <button class="task-action-btn" data-action="edit-project-from-task" data-id="' + item.pid + '" title="تعديل المشروع">' + getIconSvg("edit") + '</button>' +
+        '  <button class="task-action-btn btn-delete" data-action="delete-project-deadline" data-id="' + item.pid + '" title="حذف موعد التسليم">' + getIconSvg("trash") + '</button>' +
+        '</div>'
       : '<div class="task-actions">' +
         '  <button class="task-action-btn" data-action="edit-item" data-id="' + item.id + '" title="تعديل">' + getIconSvg("edit") + '</button>' +
         '  <button class="task-action-btn btn-delete" data-action="delete-item" data-id="' + item.id + '" title="حذف">' + getIconSvg("trash") + '</button>' +
@@ -84,12 +87,13 @@
     options = options || {};
     var activeFilter = options.activeFilter || "all";
     var searchQuery = options.searchQuery || "";
+    var projectId = options.projectId || "";
     var S = global.StudioStore;
     var CW = global.StudioCalendarWeek;
     var today = U.getTodayIso();
 
-    var allItems = S.getUnifiedItems({ kind: activeFilter, query: searchQuery });
-    var baseItems = S.getUnifiedItems({ query: searchQuery });
+    var allItems = S.getUnifiedItems({ kind: activeFilter, query: searchQuery, projectId: projectId });
+    var baseItems = S.getUnifiedItems({ query: searchQuery, projectId: projectId });
     var categories = S.getCategories ? S.getCategories() : [];
 
     // Weekly Calendar Integration
@@ -147,6 +151,7 @@
       '    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
       '    <span>إدارة الأقسام</span>',
       '  </button>',
+      '  <button class="chip-manage-btn" data-action="clear-agenda-filters" title="إظهار كل المهام وإلغاء البحث">مسح التصفية</button>',
       '</div>',
       '<form class="quick-add-bar" id="quickAddForm" autocomplete="off">',
       '  <span class="quick-add-icon" title="إضافة سريعة">',
@@ -167,7 +172,7 @@
       topToolbarHtml += [
         '<div class="online-auth-notice">',
         '  <div class="online-auth-notice-text">',
-        '    <strong>⚠️ أنت متصل بالإنترنت:</strong> للمزامنة السحابية مع قاعدة البيانات MySQL ومشاركة التعديلات، يلزم تسجيل الدخول أو إنشاء حساب (العمل بدون حساب متاح فقط في الوضع المحلي أوفلاين). سيتم نقل ونسب كافة بياناتك المحلية لحسابك تلقائياً.',
+        '    <strong>⚠️ أنت متصل بالإنترنت:</strong> لحفظ التعديلات ومشاركتها بين أجهزتك، سجّل الدخول أو أنشئ حساباً. يمكنك المتابعة محلياً دون حساب، وستُنقل بياناتك عند تسجيل الدخول.',
         '  </div>',
         '  <div class="online-auth-notice-actions">',
         '    <button class="btn btn-sm" id="agendaAuthPromptBtn">تسجيل الدخول / إنشاء حساب</button>',

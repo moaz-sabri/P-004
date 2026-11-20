@@ -22,9 +22,15 @@
   var DAY_NAMES_AR = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
   function CalendarWeek() {
-    this.currentWeekOffset = 0; // 0 = current week, -1 = last week, +1 = next week
-    this.filterByWeek = false;  // Whether agenda filters only selected week
+    this.currentWeekOffset = parseInt(localStorage.getItem("studio_week_offset") || "0", 10) || 0;
+    // اختيار الأسبوع يحدد العرض مباشرة.
+    this.filterByWeek = localStorage.getItem("studio_week_filter") !== "false";
   }
+
+  CalendarWeek.prototype.saveViewState = function () {
+    localStorage.setItem("studio_week_offset", String(this.currentWeekOffset));
+    localStorage.setItem("studio_week_filter", this.filterByWeek ? "true" : "false");
+  };
 
   /**
    * Get user-selected week start day
@@ -171,7 +177,7 @@
       '  <div class="week-actions-group">',
       '    <button class="week-filter-toggle ' + (isFiltered ? "active" : "") + '" data-action="toggle-week-filter" title="حصر العرض في مهام هذا الأسبوع فقط">',
       '      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
-      '      <span>' + (isFiltered ? "عرض الأسبوع المحدد" : "عرض الكل") + '</span>',
+      '      <span>' + (isFiltered ? "عرض الأسبوع المحدد" : "عرض جميع الأسابيع") + '</span>',
       '    </button>',
       '    <div class="week-start-selector-wrapper" title="تحديد يوم بداية الأسبوع">',
       '      <span class="selector-label">يبدأ:</span>',

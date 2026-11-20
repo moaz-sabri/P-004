@@ -23,6 +23,7 @@
 
   function renderProjectCard(proj) {
     var S = global.StudioStore;
+    var phases = S.getProjectPhases ? S.getProjectPhases() : T.PHASES;
     var today = U.getTodayIso();
     var stats = S.getProjectStats(proj.id);
 
@@ -32,7 +33,7 @@
       var deadlineClass = "";
       var deadlineText = "";
 
-      if (proj.phase === 3) {
+      if (Number(proj.phase) === 3) {
         deadlineText = "تم التسليم · " + U.formatDateArabic(proj.due);
       } else if (diff < 0) {
         deadlineClass = "deadline-late";
@@ -57,6 +58,7 @@
       '<div class="project-card" draggable="true" data-project-id="' + proj.id + '" tabindex="0">',
       '  <div class="card-top">',
       '    <div class="project-card-name">' + U.escapeHtml(proj.name) + '</div>',
+      '    <button class="task-action-btn" data-action="edit-project" data-id="' + proj.id + '" title="تعديل المشروع">تعديل</button>',
       '    <button class="task-action-btn btn-delete" data-action="delete-project" data-id="' + proj.id + '" title="حذف المشروع">' + getIconSvg("trash") + '</button>',
       '  </div>',
       '  <div class="project-card-client">' + (proj.client ? U.escapeHtml(proj.client) : "بدون عميل محدد") + '</div>',
@@ -72,10 +74,11 @@
       '  </div>',
       '  <div class="card-footer">',
       '    <select class="phase-select" data-action="change-phase" data-id="' + proj.id + '" aria-label="المرحلة">',
-      T.PHASES.map(function (ph) {
-        return '<option value="' + ph.id + '" ' + (ph.id === proj.phase ? "selected" : "") + '>' + ph.label + '</option>';
+      phases.map(function (ph) {
+        return '<option value="' + ph.id + '" ' + (Number(ph.id) === Number(proj.phase) ? "selected" : "") + '>' + ph.label + '</option>';
       }).join(""),
       '    </select>',
+      '    <button class="btn btn-secondary btn-sm" data-action="open-project-tasks" data-project-id="' + proj.id + '" title="عرض المهام المرتبطة">فتح المهام</button>',
       '    <button class="btn-icon" data-action="quick-add-task" data-project-id="' + proj.id + '" title="إضافة مهمة لهذا المشروع">' + getIconSvg("plus") + '</button>',
       '  </div>',
       '</div>'
@@ -86,6 +89,7 @@
     options = options || {};
     var searchQuery = (options.searchQuery || "").trim().toLowerCase();
     var S = global.StudioStore;
+    var phases = S.getProjectPhases ? S.getProjectPhases() : T.PHASES;
     var projects = S.getProjects();
 
     if (searchQuery) {
@@ -109,8 +113,8 @@
 
     var mobileTabsHtml = [
       '<div class="kanban-mobile-tabs" role="tablist" aria-label="مراحل المشاريع">',
-      T.PHASES.map(function (phase, idx) {
-        var count = projects.filter(function (p) { return p.phase === phase.id; }).length;
+      phases.map(function (phase, idx) {
+        var count = projects.filter(function (p) { return Number(p.phase) === Number(phase.id); }).length;
         return '<button type="button" class="kanban-mobile-tab ' + (idx === 0 ? "is-active" : "") + '" data-phase-tab="' + phase.id + '">' +
           '<span>' + phase.label + '</span>' +
           '<span class="tab-badge">' + count + '</span>' +
@@ -120,17 +124,18 @@
     ].join("");
 
     return [
+      '<div class="kanban-toolbar"><div class="kanban-toolbar-copy"><span class="toolbar-eyebrow">تنظيم العمل</span><strong>مراحل المشاريع</strong><small>عدّل أسماء المراحل أو أضف مرحلة جديدة حسب طريقة عملك.</small></div><button class="btn btn-secondary btn-sm" data-action="manage-kanban-columns">إدارة الأعمدة</button><button class="btn btn-sm" data-action="add-kanban-column">' + getIconSvg("plus") + ' عمود جديد</button></div>',
       mobileTabsHtml,
       '<div class="kanban-board" id="kanbanBoard">',
-      T.PHASES.map(function (phase) {
-        var phaseProjects = projects.filter(function (p) { return p.phase === phase.id; }).sort(function (a, b) {
+      phases.map(function (phase) {
+        var phaseProjects = projects.filter(function (p) { return Number(p.phase) === Number(phase.id); }).sort(function (a, b) {
           return (a.due || "9999").localeCompare(b.due || "9999");
         });
 
         return [
           '<div class="kanban-col" data-phase-col="' + phase.id + '">',
           '  <div class="col-header">',
-          '    <div class="col-title"><span>' + phase.label + '</span></div>',
+          '    <div class="col-title"><span>' + phase.label + '</span><div class="col-actions"><button class="btn-icon btn-sm" data-action="edit-kanban-column" data-phase-id="' + phase.id + '" title="تعديل اسم العمود" aria-label="تعديل اسم العمود">✎</button><button class="btn-icon btn-sm btn-delete" data-action="delete-kanban-column" data-phase-id="' + phase.id + '" title="حذف العمود" aria-label="حذف العمود">' + getIconSvg("trash") + '</button></div></div>',
           '    <span class="col-count">' + phaseProjects.length + '</span>',
           '  </div>',
           '  <div class="col-cards-list" data-phase="' + phase.id + '">',

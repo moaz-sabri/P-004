@@ -40,9 +40,9 @@
       <!-- Header Actions -->
       <div class="header-actions">
         <!-- Sync Status Button -->
-        <button class="btn-sync-status" id="syncStatusBtn" title="حالة الاتصال والمزامنة بقاعدة بيانات MySQL">
+        <button class="btn-sync-status" id="syncStatusBtn" title="حالة الاتصال وحفظ البيانات">
           <span class="sync-bullet" id="syncStatusBullet"></span>
-          <span id="syncStatusText">أوفلاين</span>
+          <span id="syncStatusText">دون اتصال</span>
         </button>
 
         <!-- Conflict Alert Badge -->
@@ -109,15 +109,16 @@
         </svg>
         <span>لوحة المشاريع (Kanban)</span>
       </a>
+      <a href="/kanban" class="nav-tab" data-route="kanban" aria-current="false"><span>كانبان</span></a>
 
-      <a href="/clients" class="nav-tab" data-route="clients" aria-current="false">
+      <a href="/entities" class="nav-tab" data-route="entities" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
           <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
-        <span>العملاء</span>
+        <span>الجهات</span>
       </a>
 
       <a href="/settings" class="nav-tab" data-route="settings" aria-current="false">
@@ -164,34 +165,11 @@
         <span>مشروع جديد</span>
       </button>
 
-      <button class="speed-dial-item" data-quick-action="invoice">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="5" width="20" height="14" rx="2"/>
-          <line x1="2" y1="10" x2="22" y2="10"/>
-        </svg>
-        <span>فاتورة أو دفعة مالية</span>
-      </button>
-
-      <button class="speed-dial-item" data-quick-action="design">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-        <span>تجهيز تصميم ومود بورد</span>
-      </button>
-
-      <button class="speed-dial-item" data-quick-action="appt">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-        <span>موعد وقياسات موقع</span>
-      </button>
-
       <button class="speed-dial-item" data-quick-action="task">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
         </svg>
-        <span>مهمة عامة أو اتصال</span>
+        <span>مهمة أو موعد جديد</span>
       </button>
     </div>
 
@@ -257,7 +235,7 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="taskClient">العميل المرتبط (اختياري)</label>
+          <label for="taskClient">الجهة المرتبطة (اختياري)</label>
           <select id="taskClient" class="form-control"></select>
         </div>
       </div>
@@ -304,12 +282,10 @@
       </div>
 
       <div class="form-group">
-        <label for="projectClient">اسم العميل</label>
-        <input id="projectClient" class="form-control" placeholder="مثال: أ. عبد الله / شركة الأفق">
+          <label for="projectClientSelect">الجهة المرتبطة (اختياري)</label>
+        <select id="projectClientSelect" class="form-control"></select>
       </div>
       <div class="form-group">
-        <label for="projectClientSelect">ربط بعميل (اختياري)</label>
-        <select id="projectClientSelect" class="form-control"></select>
       </div>
 
       <div class="form-group">
@@ -317,12 +293,6 @@
         <input id="projectDue" type="date" class="form-control">
       </div>
 
-      <div class="form-group">
-        <label class="form-checkbox">
-          <input type="checkbox" id="projectAutoTasks" checked>
-          <span>توليد المهام الأساسية المجدولة للمشروع تلقائياً</span>
-        </label>
-      </div>
 
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" data-dialog-close>إلغاء</button>

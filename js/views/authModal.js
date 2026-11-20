@@ -25,7 +25,7 @@
         '<div class="online-auth-notice" style="margin-bottom: 16px;">',
         '  <div class="online-auth-notice-text">',
         '    <strong>⚠️ يلزم تسجيل الدخول للعمل أونلاين:</strong>',
-        '    <span>المزامنة السحابية وقاعدة بيانات MySQL تتطلب حساباً معتمداً. العمل بدون حساب متاح فقط في الوضع المحلي (أوفلاين). أي بيانات أنشأتها محلياً ستُنقل وتُنسب لحسابك فور تسجيل الدخول.</span>',
+        '    <span>الحفظ السحابي يتطلب حساباً. يمكنك العمل دون حساب على جهازك، وستُنقل بياناتك تلقائياً عند تسجيل الدخول.</span>',
         '  </div>',
         '</div>'
       ].join("");
@@ -46,7 +46,7 @@
         '  <div class="auth-sync-status-card">',
         '    <div class="status-indicator-line">',
         '      <span class="status-bullet ' + (sync && sync.isOnline ? "online" : "offline") + '"></span>',
-        '      <span>الحالة: ' + (sync && sync.isOnline ? "متصل بقاعدة البيانات MySQL 🟢" : "وضع عدم الاتصال (Offline) 🟠") + '</span>',
+        '      <span>الحالة: ' + (sync && sync.isOnline ? "متصل ويحفظ تلقائياً 🟢" : "يعمل على هذا الجهاز 🟠") + '</span>',
         '    </div>',
         '    <div style="font-size:0.82rem; color:var(--ink-secondary);">الحركات المحلية المسجلة: <strong>' + (sync ? sync.queue.length : 0) + '</strong></div>',
         '  </div>',

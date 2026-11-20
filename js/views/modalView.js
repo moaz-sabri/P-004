@@ -9,6 +9,7 @@
 
   function ModalManager() {
     this.editItemId = null;
+    this.editProjectId = null;
     this.confirmCallback = null;
     this.selectedColor = "#1f6355";
     this.editingCategoryId = null;
@@ -168,27 +169,31 @@
     return true;
   };
 
-  ModalManager.prototype.openProjectModal = function () {
+  ModalManager.prototype.openProjectModal = function (projectId) {
+    var S = global.StudioStore;
     var dialog = document.getElementById("projectDialog");
     if (!dialog) return;
+    this.editProjectId = projectId || null;
+    var project = projectId ? S.getProject(projectId) : null;
 
     var nameInput = document.getElementById("projectName");
-    var clientInput = document.getElementById("projectClient");
     var clientSelect = document.getElementById("projectClientSelect");
     var dueInput = document.getElementById("projectDue");
-    var autoTasksInput = document.getElementById("projectAutoTasks");
 
-    if (nameInput) nameInput.value = "";
-    if (clientInput) clientInput.value = "";
+    if (nameInput) nameInput.value = project ? (project.name || "") : "";
     if (clientSelect && global.StudioStore && global.StudioStore.getClients) {
       clientSelect.innerHTML = '<option value="">بدون عميل</option>' +
         global.StudioStore.getClients().map(function (c) {
           return '<option value="' + c.id + '">' + U.escapeHtml(c.name) + '</option>';
         }).join("");
-      clientSelect.value = "";
+      clientSelect.value = project ? (project.cid || "") : "";
     }
-    if (dueInput) dueInput.value = "";
-    if (autoTasksInput) autoTasksInput.checked = true;
+    if (dueInput) dueInput.value = project ? (project.due || "") : "";
+
+    var title = dialog.querySelector("h3");
+    if (title) title.textContent = project ? "تعديل المشروع" : "مشروع جديد";
+    var submit = dialog.querySelector('button[type="submit"]');
+    if (submit) submit.textContent = project ? "حفظ التعديلات" : "إنشاء المشروع";
 
     dialog.showModal();
     if (nameInput) nameInput.focus();
@@ -205,27 +210,25 @@
       return false;
     }
 
-    var clientText = document.getElementById("projectClient") ? document.getElementById("projectClient").value.trim() : "";
     var clientSelect = document.getElementById("projectClientSelect");
     var cid = clientSelect ? (clientSelect.value || "") : "";
-    var client = clientText;
+    var client = "";
     if (cid) {
       var c = S.getClient(cid);
       if (c) client = c.name;
-    } else if (client) {
-      // try auto-link by name
-      var found = (S.getClients() || []).filter(function (cl) {
-        return (cl.name || "").toLowerCase() === client.toLowerCase();
-      })[0];
-      if (found) cid = found.id;
     }
 
     var due = document.getElementById("projectDue") ? document.getElementById("projectDue").value : "";
-    var generateTasks = document.getElementById("projectAutoTasks") ? document.getElementById("projectAutoTasks").checked : true;
 
-    S.addProject({ name: name, client: client, cid: cid, due: due, generateTasks: generateTasks });
+    if (this.editProjectId) {
+      S.updateProject(this.editProjectId, { name: name, client: client, cid: cid, due: due });
+      this.showToast('تم تحديث مشروع "' + name + '" بنجاح', "success");
+    } else {
+      S.addProject({ name: name, client: client, cid: cid, due: due });
+      this.showToast('تم إنشاء مشروع "' + name + '" بنجاح', "success");
+    }
     if (global.StudioNotifications) global.StudioNotifications.playChime();
-    this.showToast('تم إنشاء مشروع "' + name + '" بنجاح', "success");
+    this.editProjectId = null;
 
     var dialog = document.getElementById("projectDialog");
     if (dialog) dialog.close();
@@ -240,7 +243,7 @@
     var client = clientId ? S.getClient(clientId) : null;
 
     var titleEl = document.getElementById("clientModalTitle");
-    if (titleEl) titleEl.textContent = client ? "تعديل بيانات العميل" : "إضافة عميل جديد";
+    if (titleEl) titleEl.textContent = client ? "تعديل بيانات الجهة" : "إضافة جهة جديدة";
 
     var nameInp = document.getElementById("clientName");
     var phoneInp = document.getElementById("clientPhone");
@@ -261,7 +264,7 @@
     var nameInp = document.getElementById("clientName");
     var name = nameInp ? nameInp.value.trim() : "";
     if (!name) {
-      this.showToast("يرجى إدخال اسم العميل", "error");
+      this.showToast("يرجى إدخال اسم الجهة", "error");
       if (nameInp) nameInp.focus();
       return false;
     }
@@ -279,7 +282,7 @@
     } else {
       S.addClient(payload);
       if (global.StudioNotifications) global.StudioNotifications.playChime();
-      this.showToast('تم إضافة العميل "' + name + '" بنجاح', "success");
+      this.showToast('تم إضافة الجهة "' + name + '" بنجاح', "success");
     }
 
     var dialog = document.getElementById("clientDialog");
@@ -305,7 +308,7 @@
 
     var html = [];
     html.push('<div class="modal-header">');
-    html.push('  <h3>ملف العميل: ' + U.escapeHtml(client.name) + '</h3>');
+    html.push('  <h3>ملف الجهة: ' + U.escapeHtml(client.name) + '</h3>');
     html.push('  <button class="btn-icon" data-dialog-close aria-label="إغلاق">✕</button>');
     html.push('</div>');
 
@@ -322,14 +325,16 @@
     // Projects
     html.push('<h4 style="margin:12px 0 6px; color:var(--ink-primary);">المشاريع (' + projects.length + ')</h4>');
     if (projects.length === 0) {
-      html.push('<p style="color:var(--ink-muted); font-size:0.86rem;">لا توجد مشاريع مرتبط بهذا العميل.</p>');
+      html.push('<p style="color:var(--ink-muted); font-size:0.86rem;">لا توجد مشاريع مرتبطة بهذه الجهة.</p>');
     } else {
       html.push('<div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">');
       for (var p = 0; p < projects.length; p++) {
         var pr = projects[p];
         html.push('  <div style="padding:8px 10px; background:var(--bg-app); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center;">');
         html.push('    <span style="font-weight:600;">' + U.escapeHtml(pr.name) + '</span>');
-        html.push('    <span class="tag tag-task">' + U.escapeHtml((T.PHASES ? (T.PHASES[pr.phase] ? T.PHASES[pr.phase].label : "") : "")) + '</span>');
+        var projectPhases = S.getProjectPhases ? S.getProjectPhases() : (T.PHASES || []);
+        var projectPhase = projectPhases.filter(function (phase) { return Number(phase.id) === Number(pr.phase); })[0];
+        html.push('    <span class="tag tag-task">' + U.escapeHtml(projectPhase ? projectPhase.label : "") + '</span>');
         html.push('  </div>');
       }
       html.push('</div>');
@@ -338,7 +343,7 @@
     // Tasks
     html.push('<h4 style="margin:12px 0 6px; color:var(--ink-primary);">المهام والمواعيد (' + tasks.length + ')</h4>');
     if (tasks.length === 0) {
-      html.push('<p style="color:var(--ink-muted); font-size:0.86rem;">لا توجد مهام مرتبطة بهذا العميل.</p>');
+      html.push('<p style="color:var(--ink-muted); font-size:0.86rem;">لا توجد مهام مرتبطة بهذه الجهة.</p>');
     } else {
       html.push('<div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px; max-height:200px; overflow-y:auto;">');
       for (var t = 0; t < tasks.length; t++) {
@@ -375,6 +380,36 @@
       html.push('</div>');
     }
 
+    content.innerHTML = html.join("");
+    dialog.showModal();
+  };
+
+  ModalManager.prototype.openProjectDetail = function (projectId) {
+    var S = global.StudioStore;
+    var project = S.getProject(projectId);
+    if (!project) return;
+    var dialog = document.getElementById("projectDetailDialog");
+    if (!dialog) {
+      dialog = document.createElement("dialog");
+      dialog.id = "projectDetailDialog";
+      dialog.style.width = "min(680px, calc(100vw - 28px))";
+      dialog.innerHTML = '<div id="projectDetailContent"></div>';
+      document.body.appendChild(dialog);
+    }
+    var tasks = S.getItems().filter(function (item) { return String(item.pid || "") === String(project.id); });
+    var content = document.getElementById("projectDetailContent");
+    var html = ['<div class="modal-header"><h3>ملف المشروع: ' + U.escapeHtml(project.name) + '</h3><button class="btn-icon" data-dialog-close aria-label="إغلاق">✕</button></div>'];
+    html.push('<div style="margin-bottom:14px;color:var(--ink-secondary);font-size:0.9rem;">');
+    html.push('<div>الجهة: ' + U.escapeHtml(project.client || "بدون جهة محددة") + '</div>');
+    if (project.due) html.push('<div>موعد التسليم: ' + U.escapeHtml(project.due) + '</div>');
+    html.push('<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-sm" onclick="StudioModalView.openProjectModal(\'' + project.id + '\')">تعديل المشروع</button><button class="btn btn-secondary btn-sm" onclick="StudioModalView.openTaskModal(null,\'' + project.id + '\')">+ مهمة جديدة</button></div></div>');
+    html.push('<h4 style="margin:12px 0 6px;color:var(--ink-primary);">المهام المرتبطة (' + tasks.length + ')</h4>');
+    if (!tasks.length) html.push('<p style="color:var(--ink-muted);font-size:0.86rem;">لا توجد مهام مرتبطة بهذا المشروع.</p>');
+    else {
+      html.push('<div style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;">');
+      tasks.forEach(function (item) { html.push('<div style="padding:9px 10px;background:var(--bg-app);border-radius:var(--radius-sm);display:flex;justify-content:space-between;gap:10px;"><span style="' + (item.done ? 'text-decoration:line-through;color:var(--ink-muted);' : '') + '">' + U.escapeHtml(item.title) + '</span><span style="color:var(--ink-muted);white-space:nowrap;">' + U.escapeHtml(item.date || '') + '</span></div>'); });
+      html.push('</div>');
+    }
     content.innerHTML = html.join("");
     dialog.showModal();
   };

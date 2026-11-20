@@ -19,8 +19,9 @@
 
   function App() {
     this.page = document.body.dataset.page || "agenda";
-    this.activeFilter = "all";
+    this.activeFilter = localStorage.getItem("studio_agenda_filter") || "all";
     this.searchQuery = "";
+    this.projectFilter = new URLSearchParams(window.location.search).get("project") || "";
     this.draggedProjectId = null;
     this.deferredInstallPrompt = null;
 
@@ -77,7 +78,7 @@
     }
 
     this.bindEvents();
-    if (this.page === "projects") {
+    if (this.page === "projects" || this.page === "kanban") {
       this.bindDragAndDrop();
     }
 
@@ -91,6 +92,15 @@
     if (Auth) {
       Auth.subscribe(function (user) {
         self.updateAuthUI(user);
+        if (Sync) {
+          self.updateSyncUI({
+            isOnline: Sync.isOnline,
+            isSyncing: Sync.isSyncing,
+            conflictsCount: Sync.conflicts.length,
+            pendingCount: Sync.queue.length,
+            isLoggedIn: Auth.isLoggedIn()
+          });
+        }
         if (AuthGate) {
           AuthGate.checkGate();
         }
@@ -110,7 +120,8 @@
         isOnline: Sync.isOnline,
         isSyncing: Sync.isSyncing,
         conflictsCount: Sync.conflicts.length,
-        pendingCount: Sync.queue.length
+        pendingCount: Sync.queue.length,
+        isLoggedIn: Auth ? Auth.isLoggedIn() : false
       });
     }
 
@@ -163,25 +174,27 @@
 
     // 1. Sync button pill
     if (this.dom.syncStatusBtn) {
-      this.dom.syncStatusBtn.classList.remove("is-online", "is-offline", "is-syncing");
+      this.dom.syncStatusBtn.classList.remove("is-online", "is-offline", "is-local", "is-syncing");
       if (isSyncing) {
         this.dom.syncStatusBtn.classList.add("is-syncing");
-        if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = "جاري المزامنة...";
+        if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = "جاري حفظ التغييرات...";
       } else if (isOnline) {
         if (!isLoggedIn) {
-          this.dom.syncStatusBtn.classList.add("is-offline");
-          if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = "أونلاين (يلزم تسجيل الدخول)";
+          this.dom.syncStatusBtn.classList.add("is-local");
+          if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = pendingCount > 0 ? "متصل · محفوظ محليًا (" + pendingCount + ")" : "متصل · الحفظ محليًا";
+          this.dom.syncStatusBtn.title = "الإنترنت متاح، والمزامنة السحابية تتطلب تسجيل الدخول";
         } else {
           this.dom.syncStatusBtn.classList.add("is-online");
-          var text = "متصل";
-          if (pendingCount > 0) text += " (" + pendingCount + ")";
+          var text = pendingCount > 0 ? "مزامنة معلقة (" + pendingCount + ")" : "المزامنة فعالة";
           if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = text;
+          this.dom.syncStatusBtn.title = "المزامنة السحابية والحفظ المحلي يعملان تلقائيًا";
         }
       } else {
         this.dom.syncStatusBtn.classList.add("is-offline");
-        var offlineText = "وضع محلي (أوفلاين)";
-        if (pendingCount > 0) offlineText += " (" + pendingCount + " معلق)";
+        var offlineText = "محفوظ محليًا · بانتظار الاتصال";
+        if (pendingCount > 0) offlineText += " (" + pendingCount + ")";
         if (this.dom.syncStatusText) this.dom.syncStatusText.textContent = offlineText;
+        this.dom.syncStatusBtn.title = "لا يوجد اتصال حاليًا؛ ستتم المزامنة تلقائيًا عند عودته";
       }
     }
 
@@ -202,10 +215,10 @@
     if (settingSyncStatusEl) {
       if (isOnline) {
         settingSyncStatusEl.innerHTML = isLoggedIn
-          ? '<span class="status-badge is-online">🟢 متصل بقاعدة بيانات MySQL (تم تسجيل الدخول)</span>'
-          : '<span class="status-badge is-offline" style="color:var(--color-brass);">🟠 متصل بالنت لكن يلزم تسجيل الدخول للمزامنة</span>';
+          ? '<span class="status-badge is-online">🟢 متصل ويحفظ التعديلات تلقائياً</span>'
+          : '<span class="status-badge is-offline" style="color:var(--color-brass);">🟠 الإنترنت متاح؛ البيانات محفوظة محليًا حتى تسجيل الدخول</span>';
       } else {
-        settingSyncStatusEl.innerHTML = '<span class="status-badge is-offline">💻 وضع العمل المحلي (أوفلاين 100%)</span>';
+        settingSyncStatusEl.innerHTML = '<span class="status-badge is-offline">💻 يعمل على هذا الجهاز دون اتصال</span>';
       }
     }
     var settingPendingCountEl = document.getElementById("settingPendingCount");
@@ -384,9 +397,10 @@
     if (this.page === "agenda" && AgendaV && this.dom.viewContainer) {
       this.dom.viewContainer.innerHTML = AgendaV.renderAgendaView({
         activeFilter: this.activeFilter,
-        searchQuery: this.searchQuery
+        searchQuery: this.searchQuery,
+        projectId: this.projectFilter
       });
-    } else if (this.page === "projects" && KanbanV && this.dom.viewContainer) {
+    } else if (this.page === "kanban" && KanbanV && this.dom.viewContainer) {
       this.dom.viewContainer.innerHTML = KanbanV.renderKanbanView({
         searchQuery: this.searchQuery
       });
@@ -418,9 +432,10 @@
           }
         }, 60), { passive: true });
       }
-    } else if (this.page === "clients" && ClientsV && this.dom.viewContainer) {
+    } else if ((this.page === "clients" || this.page === "entities" || this.page === "projects") && ClientsV && this.dom.viewContainer) {
       this.dom.viewContainer.innerHTML = ClientsV.renderClientsView({
-        searchQuery: this.searchQuery
+        searchQuery: this.searchQuery,
+        projectOnly: this.page === "projects"
       });
     }
 
@@ -431,6 +446,34 @@
         this.dom.searchClear.classList.remove("visible");
       }
     }
+  };
+
+  App.prototype.offerUndo = function (message, undoCallback) {
+    var existing = document.getElementById("undo-toast");
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    var toast = document.createElement("div");
+    toast.id = "undo-toast";
+    toast.className = "toast toast-info undo-toast";
+    toast.innerHTML = '<span>' + U.escapeHtml(message) + '</span><button type="button" class="btn btn-secondary btn-sm" id="undoActionBtn">تراجع</button>';
+    var container = document.getElementById("toast-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "toast-container";
+      document.body.appendChild(container);
+    }
+    container.appendChild(toast);
+    var closed = false;
+    var close = function () {
+      if (closed) return;
+      closed = true;
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    };
+    toast.querySelector("#undoActionBtn").addEventListener("click", function () {
+      undoCallback();
+      close();
+      M.showToast("تم التراجع عن الحذف", "success");
+    });
+    setTimeout(close, 6500);
   };
 
   /* ------------------------------------------------------------------------
@@ -488,7 +531,7 @@
       this.dom.syncStatusBtn.addEventListener("click", function () {
         if (!Auth || !Auth.isLoggedIn()) {
           if (Sync && Sync.isOnline) {
-            M.showToast("للمزامنة والعمل أونلاين، يجب تسجيل الدخول أو إنشاء حسابك.", "info");
+            M.showToast("البيانات محفوظة محليًا. سجّل الدخول لتفعيل المزامنة السحابية.", "info");
             if (global.StudioAuthModal) {
               global.StudioAuthModal.openAuthModal(true);
             }
@@ -718,6 +761,7 @@
         var prevWeekBtn = e.target.closest('[data-action="prev-week"]');
         if (prevWeekBtn && CW) {
           CW.currentWeekOffset--;
+          CW.saveViewState();
           self.render();
           return;
         }
@@ -725,6 +769,7 @@
         var nextWeekBtn = e.target.closest('[data-action="next-week"]');
         if (nextWeekBtn && CW) {
           CW.currentWeekOffset++;
+          CW.saveViewState();
           self.render();
           return;
         }
@@ -732,6 +777,7 @@
         var currentWeekBtn = e.target.closest('[data-action="current-week"]');
         if (currentWeekBtn && CW) {
           CW.currentWeekOffset = 0;
+          CW.saveViewState();
           self.render();
           return;
         }
@@ -739,6 +785,7 @@
         var toggleWeekFilterBtn = e.target.closest('[data-action="toggle-week-filter"]');
         if (toggleWeekFilterBtn && CW) {
           CW.filterByWeek = !CW.filterByWeek;
+          CW.saveViewState();
           self.render();
           return;
         }
@@ -760,12 +807,54 @@
         var chip = e.target.closest("[data-filter]");
         if (chip) {
           self.activeFilter = chip.dataset.filter;
+          localStorage.setItem("studio_agenda_filter", self.activeFilter);
+          self.render();
+          return;
+        }
+
+        var clearFiltersBtn = e.target.closest('[data-action="clear-agenda-filters"]');
+        if (clearFiltersBtn) {
+          self.activeFilter = "all";
+          self.searchQuery = "";
+          localStorage.setItem("studio_agenda_filter", "all");
+          if (self.dom.searchInput) self.dom.searchInput.value = "";
           self.render();
           return;
         }
 
         if (e.target.id === "emptyProjectBtn") {
           M.openProjectModal();
+          return;
+        }
+
+        var manageColumnsBtn = e.target.closest('[data-action="manage-kanban-columns"]');
+        if (manageColumnsBtn) {
+          self.manageKanbanColumns();
+          return;
+        }
+
+        var addColumnBtn = e.target.closest('[data-action="add-kanban-column"]');
+        if (addColumnBtn) { self.openKanbanColumnDialog(); return; }
+        var editColumnBtn = e.target.closest('[data-action="edit-kanban-column"]');
+        if (editColumnBtn) { self.openKanbanColumnDialog(editColumnBtn.dataset.phaseId); return; }
+        var deleteColumnBtn = e.target.closest('[data-action="delete-kanban-column"]');
+        if (deleteColumnBtn) { self.deleteKanbanColumn(deleteColumnBtn.dataset.phaseId); return; }
+
+        var editProjectBtn = e.target.closest('[data-action="edit-project"]');
+        if (editProjectBtn) {
+          M.openProjectModal(editProjectBtn.dataset.id);
+          return;
+        }
+
+        var openProjectDetailBtn = e.target.closest('[data-action="open-project-detail"]');
+        if (openProjectDetailBtn) {
+          M.openProjectDetail(openProjectDetailBtn.dataset.id);
+          return;
+        }
+
+        var openProjectTasksBtn = e.target.closest('[data-action="open-project-tasks"]');
+        if (openProjectTasksBtn) {
+          window.location.assign("index.html?project=" + encodeURIComponent(openProjectTasksBtn.dataset.projectId));
           return;
         }
 
@@ -783,8 +872,30 @@
             title: "حذف المهمة",
             message: 'هل أنت متأكد من حذف المهمة: "' + (item ? item.title : "") + '"؟',
             onConfirm: function () {
+              var deletedItem = {};
+              for (var itemKey in item) if (item.hasOwnProperty(itemKey)) deletedItem[itemKey] = item[itemKey];
               S.deleteItem(id);
-              M.showToast("تم حذف المهمة", "info");
+              self.offerUndo("تم حذف المهمة", function () { S.restoreItem(deletedItem); });
+            }
+          });
+          return;
+        }
+
+        var editProjectFromTask = e.target.closest('[data-action="edit-project-from-task"]');
+        if (editProjectFromTask) {
+          M.openProjectModal(editProjectFromTask.dataset.id);
+          return;
+        }
+
+        var deleteProjectDeadline = e.target.closest('[data-action="delete-project-deadline"]');
+        if (deleteProjectDeadline) {
+          var deadlineProject = S.getProject(deleteProjectDeadline.dataset.id);
+          M.openConfirmModal({
+            title: "حذف موعد التسليم",
+            message: 'سيتم حذف موعد التسليم من المشروع "' + (deadlineProject ? deadlineProject.name : "") + '" دون حذف المشروع أو مهامه. هل تريد المتابعة؟',
+            onConfirm: function () {
+              S.updateProject(deleteProjectDeadline.dataset.id, { due: "" });
+              M.showToast("تم حذف موعد التسليم", "success");
             }
           });
           return;
@@ -798,8 +909,15 @@
             title: "حذف المشروع",
             message: 'هل أنت متأكد من حذف المشروع "' + (proj ? proj.name : "") + '" وجميع مهامه؟',
             onConfirm: function () {
+              var deletedProject = {};
+              for (var projectKey in proj) if (proj.hasOwnProperty(projectKey)) deletedProject[projectKey] = proj[projectKey];
+              var deletedTasks = S.getItems().filter(function (task) { return task.pid === pId; }).map(function (task) {
+                var copy = {};
+                for (var taskKey in task) if (task.hasOwnProperty(taskKey)) copy[taskKey] = task[taskKey];
+                return copy;
+              });
               S.deleteProject(pId, true);
-              M.showToast("تم حذف المشروع بنجاح", "info");
+              self.offerUndo("تم حذف المشروع والمهام المرتبطة به", function () { S.restoreProject(deletedProject, deletedTasks); });
             }
           });
           return;
@@ -866,6 +984,60 @@
         }
       });
     }
+
+    this.openKanbanColumnDialog = function (phaseId) {
+      var S = global.StudioStore, phases = S.getProjectPhases(), phase = phaseId ? phases.filter(function (p) { return String(p.id) === String(phaseId); })[0] : null;
+      var dialog = document.getElementById("kanbanColumnDialog");
+      if (!dialog) { dialog = document.createElement("dialog"); dialog.id = "kanbanColumnDialog"; dialog.innerHTML = '<form method="dialog" class="column-dialog-form"><div class="modal-header"><h3 id="kanbanColumnDialogTitle"></h3><button class="btn-icon" value="cancel" aria-label="إغلاق">✕</button></div><label for="kanbanColumnName">اسم العمود</label><input id="kanbanColumnName" class="form-control" required maxlength="40" placeholder="مثال: قيد المراجعة"><div class="modal-actions"><button class="btn btn-secondary" value="cancel">إلغاء</button><button class="btn" id="saveKanbanColumnBtn" value="default">حفظ</button></div></form>'; document.body.appendChild(dialog); }
+      dialog.querySelector("#kanbanColumnDialogTitle").textContent = phase ? "تعديل اسم العمود" : "إضافة عمود جديد";
+      dialog.querySelector("#kanbanColumnName").value = phase ? phase.label : "";
+      dialog.querySelector("#saveKanbanColumnBtn").onclick = function (ev) { ev.preventDefault(); var name = dialog.querySelector("#kanbanColumnName").value.trim(); if (!name) return; var current = S.getProjectPhases(); if (phase) { current.forEach(function (p) { if (String(p.id) === String(phaseId)) p.label = name; }); } else { current.push({ label: name, key: "custom" }); } S.saveProjectPhases(current); dialog.close(); self.render(); M.showToast(phase ? "تم تعديل اسم العمود" : "تمت إضافة العمود", "success"); };
+      dialog.showModal();
+      dialog.querySelector("#kanbanColumnName").focus();
+    };
+
+    this.deleteKanbanColumn = function (phaseId) {
+      var S = global.StudioStore, phases = S.getProjectPhases(), phase = phases.filter(function (p) { return String(p.id) === String(phaseId); })[0];
+      if (!phase) return;
+      if (phases.length <= 1) { M.showToast("يجب إبقاء عمود واحد على الأقل", "error"); return; }
+      if (S.getProjects().some(function (p) { return p.phase === phase.id; })) { M.showToast("لا يمكن حذف عمود يحتوي على مشاريع", "error"); return; }
+      M.openConfirmModal({ title: "حذف العمود", message: 'هل تريد حذف العمود "' + phase.label + '" نهائيًا؟', onConfirm: function () { S.saveProjectPhases(phases.filter(function (p) { return String(p.id) !== String(phaseId); })); self.render(); M.showToast("تم حذف العمود", "success"); } });
+    };
+
+    this.manageKanbanColumns = function () {
+      var S = global.StudioStore;
+      var phases = S.getProjectPhases();
+      var menu = phases.map(function (p, i) { return (i + 1) + ". " + p.label; }).join("\n");
+      var choice = window.prompt("إدارة أعمدة لوحة المشاريع:\n" + menu + "\n\nرقم = إعادة تسمية، + = إضافة، -رقم = حذف، <رقم أو >رقم = نقل العمود:", "");
+      if (choice === null) return;
+      if (choice === "+") {
+        var label = window.prompt("اسم العمود الجديد:", "مرحلة جديدة");
+        if (label && label.trim()) { phases.push({ label: label.trim(), key: "custom" }); S.saveProjectPhases(phases); this.render(); M.showToast("تمت إضافة العمود", "success"); }
+        return;
+      }
+      if (choice.charAt(0) === "-") {
+        var deleteIndex = choice.length > 1 ? parseInt(choice.slice(1), 10) - 1 : phases.length - 1;
+        if (deleteIndex < 0 || deleteIndex >= phases.length) return;
+        var target = phases[deleteIndex];
+        var count = S.getProjects().filter(function (p) { return p.phase === target.id; }).length;
+        if (count) { M.showToast("لا يمكن حذف عمود يحتوي على مشاريع", "error"); return; }
+        if (phases.length <= 1) { M.showToast("يجب إبقاء عمود واحد على الأقل", "error"); return; }
+        phases.splice(deleteIndex, 1); S.saveProjectPhases(phases); this.render(); M.showToast("تم حذف العمود", "success"); return;
+      }
+      if (choice.charAt(0) === "<" || choice.charAt(0) === ">") {
+        var moveIndex = parseInt(choice.slice(1), 10) - 1;
+        var destination = choice.charAt(0) === "<" ? moveIndex - 1 : moveIndex + 1;
+        if (moveIndex >= 0 && moveIndex < phases.length && destination >= 0 && destination < phases.length) {
+          var moved = phases.splice(moveIndex, 1)[0]; phases.splice(destination, 0, moved);
+          S.saveProjectPhases(phases); this.render(); M.showToast("تم ترتيب الأعمدة", "success");
+        }
+        return;
+      }
+      var index = parseInt(choice, 10) - 1;
+      if (index < 0 || index >= phases.length) return;
+      var next = window.prompt("الاسم الجديد للعمود:", phases[index].label);
+      if (next && next.trim()) { phases[index].label = next.trim(); S.saveProjectPhases(phases); this.render(); M.showToast("تم تعديل اسم العمود", "success"); }
+    };
 
     // Settings page specific bindings
     var setThemeLight = document.getElementById("setThemeLight");
@@ -978,6 +1150,7 @@
     this.dom.viewContainer.addEventListener("dragstart", function (e) {
       var card = e.target.closest(".project-card");
       if (!card) return;
+      if (e.target.closest("button, select, input, textarea, a")) return;
 
       self.draggedProjectId = card.dataset.projectId;
       card.classList.add("is-dragging");
@@ -1027,7 +1200,7 @@
 
       if (projectId && !isNaN(targetPhase)) {
         var proj = S.getProject(projectId);
-        if (proj && proj.phase !== targetPhase) {
+        if (proj && Number(proj.phase) !== targetPhase) {
           S.changeProjectPhase(projectId, targetPhase);
           if (N) N.playChime();
           M.showToast('تم نقل "' + proj.name + '" إلى المرحلة الجديدة', "success");

@@ -39,9 +39,9 @@
       <!-- Header Actions -->
       <div class="header-actions">
         <!-- Sync Status Button -->
-        <button class="btn-sync-status" id="syncStatusBtn" title="حالة الاتصال والمزامنة بقاعدة بيانات MySQL">
+        <button class="btn-sync-status" id="syncStatusBtn" title="حالة الاتصال وحفظ البيانات">
           <span class="sync-bullet" id="syncStatusBullet"></span>
-          <span id="syncStatusText">أوفلاين</span>
+          <span id="syncStatusText">دون اتصال</span>
         </button>
 
         <!-- Conflict Alert Badge -->
@@ -98,15 +98,16 @@
         </svg>
         <span>لوحة المشاريع (Kanban)</span>
       </a>
+      <a href="/kanban" class="nav-tab" data-route="kanban" aria-current="false"><span>كانبان</span></a>
 
-      <a href="/clients" class="nav-tab" data-route="clients" aria-current="false">
+      <a href="/entities" class="nav-tab" data-route="entities" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
           <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
-        <span>العملاء</span>
+        <span>الجهات</span>
       </a>
 
       <a href="/settings" class="nav-tab" data-route="settings" aria-current="page">
@@ -121,7 +122,7 @@
     <!-- Settings Sections Grid -->
     <a class="context-help settings-help-link" href="/guide#tips" title="شرح النسخ الاحتياطي والتنبيهات والعمل دون إنترنت" aria-label="شرح الإعدادات"><span class="context-help-icon">؟</span><span>تحتاج شرحًا للإعدادات؟</span></a>
     <div class="settings-grid">
-      <!-- Card: MySQL Database & Offline-First Sync -->
+      <!-- Card: Data storage and automatic sync -->
       <section class="setting-card">
         <h3 class="setting-card-title">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -129,9 +130,9 @@
             <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
             <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
           </svg>
-          <span>قاعدة بيانات MySQL والمزامنة التلقائية</span>
+          <span>حفظ البيانات والمزامنة التلقائية</span>
         </h3>
-        <p class="setting-card-desc">يعمل النظام تلقائياً وبشكل طبيعي 100% في وضع عدم توفر الإنترنت (Offline)، وعند توفر النت تتم المزامنة التلقائية مع تسجيل مصدر كل عملية، وتطبيق آخر تعديل زمني مع كشف وحسم التعارضات.</p>
+        <p class="setting-card-desc">يمكنك العمل بشكل طبيعي دون إنترنت. وعند عودة الاتصال تُحفظ التعديلات وتُزامن تلقائياً، مع الحفاظ على أحدث نسخة من بياناتك.</p>
         <div class="setting-status-box">
           <div id="settingSyncStatus">جاري الفحص...</div>
           <div class="setting-pending-box">العمليات المحلية المعلقة: <strong id="settingPendingCount">0</strong></div>
@@ -325,7 +326,7 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="taskClient">العميل المرتبط (اختياري)</label>
+          <label for="taskClient">الجهة المرتبطة (اختياري)</label>
           <select id="taskClient" class="form-control"></select>
         </div>
       </div>
@@ -372,12 +373,10 @@
       </div>
 
       <div class="form-group">
-        <label for="projectClient">اسم العميل</label>
-        <input id="projectClient" class="form-control" placeholder="مثال: أ. عبد الله / شركة الأفق">
+          <label for="projectClientSelect">الجهة المرتبطة (اختياري)</label>
+        <select id="projectClientSelect" class="form-control"></select>
       </div>
       <div class="form-group">
-        <label for="projectClientSelect">ربط بعميل (اختياري)</label>
-        <select id="projectClientSelect" class="form-control"></select>
       </div>
 
       <div class="form-group">
@@ -385,12 +384,6 @@
         <input id="projectDue" type="date" class="form-control">
       </div>
 
-      <div class="form-group">
-        <label class="form-checkbox">
-          <input type="checkbox" id="projectAutoTasks" checked>
-          <span>توليد المهام الأساسية المجدولة للمشروع تلقائياً</span>
-        </label>
-      </div>
 
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" data-dialog-close>إلغاء</button>

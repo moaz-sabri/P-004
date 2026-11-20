@@ -99,7 +99,8 @@ module.exports = (env, argv) => {
         rewrites: [
           { from: /^\/$/, to: "/index.html" },
           { from: /^\/projects(?:\/)?$/, to: "/projects.html" },
-          { from: /^\/clients(?:\/)?$/, to: "/clients.html" },
+          { from: /^\/kanban(?:\/)?$/, to: "/kanban.html" },
+          { from: /^\/(?:entities|clients)(?:\/)?$/, to: "/clients.html" },
           { from: /^\/settings(?:\/)?$/, to: "/settings.html" },
           { from: /^\/guide(?:\/)?$/, to: "/guide.html" },
         ],

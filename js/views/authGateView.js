@@ -133,15 +133,11 @@
       '      </div>',
       '      <div class="form-group">',
       '        <label for="gateLoginPass">كلمة المرور <span style="color:var(--color-late)">*</span></label>',
-      '        <input type="password" id="gateLoginPass" class="form-control" autocomplete="current-password" placeholder="••••••••" value="admin123">',
+      '        <input type="password" id="gateLoginPass" class="form-control" autocomplete="current-password" placeholder="••••••••">',
       '      </div>',
       '      <button type="submit" class="btn btn-block" style="padding: 12px; font-size: 1rem; margin-top: 14px;" id="gateLoginSubmitBtn">',
       '        <span>دخول إلى دفتر ومزامنة البيانات</span>',
       '      </button>',
-      '      <div class="gate-credentials-hint">',
-      '        <span>💡 حساب تجريبي سريع: </span>',
-      '        <code>admin</code> / <code>admin123</code>',
-      '      </div>',
       '    </form>',
 
       // Register Form

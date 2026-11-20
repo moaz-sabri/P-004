@@ -1167,6 +1167,15 @@ textarea.form-control {
   border-right: 4px solid var(--color-info);
 }
 
+.undo-toast {
+  gap: 12px;
+}
+
+.undo-toast .btn {
+  min-width: 64px;
+  padding: 5px 10px;
+}
+
 @keyframes toastIn {
   from {
     opacity: 0;
@@ -1283,6 +1292,17 @@ textarea.form-control {
 
 .btn-sync-status.is-offline {
   color: var(--ink-secondary);
+}
+
+.btn-sync-status.is-local {
+  color: var(--color-brass);
+  border-color: var(--color-brass-border);
+  background: var(--color-brass-light);
+}
+
+.btn-sync-status.is-local .sync-bullet {
+  background-color: var(--color-brass);
+  box-shadow: 0 0 7px var(--color-brass);
 }
 
 .btn-sync-status.is-syncing .sync-bullet {

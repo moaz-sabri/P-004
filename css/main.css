@@ -26,13 +26,20 @@ body {
 .app-container { max-width: 1480px; }
 
 .app-header {
-  padding: 18px 20px;
+  padding: 14px 16px;
   border: 1px solid var(--border-line);
-  border-radius: 22px;
+  border-radius: 18px;
   background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
-  box-shadow: 0 12px 35px rgba(20, 45, 40, .08);
+  box-shadow: 0 8px 24px rgba(20, 45, 40, .06);
   backdrop-filter: blur(14px);
 }
+
+.app-header .stats-container { order: 2; max-width: 390px; }
+.app-header .header-actions { order: 3; }
+.app-header .brand-section { order: 1; min-width: 145px; }
+.app-header .stat-card { padding: 7px 9px; }
+.app-header .stat-card b { font-size: 1.2rem; }
+.app-header .stat-card span { font-size: .7rem; }
 
 .brand-title { letter-spacing: -.035em; }
 .brand-icon { filter: drop-shadow(0 5px 8px rgba(31,99,85,.18)); }

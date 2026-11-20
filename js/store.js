@@ -10,6 +10,7 @@
   var STORAGE_KEY = "mazen-planner-v2";
   var LEGACY_STORAGE_KEY = "mazen-planner-v1";
   var WEEK_START_KEY = "studio_week_start_day";
+  var PHASES_KEY = "studio_kanban_phases";
 
   function syncEnqueue(entityType, entityId, action, payload) {
     if (global.StudioSync && global.StudioSync.enqueueChange) {
@@ -31,6 +32,16 @@
       var savedV2 = localStorage.getItem(STORAGE_KEY);
       if (savedV2) {
         var state = JSON.parse(savedV2);
+        // إزالة بيانات العرض التجريبية القديمة فقط، مع الحفاظ على أي بيانات أنشأها المستخدم.
+        var demoNames = ["مشروع تطوير جديد", "مشروع بحث وتحليل"];
+        if (Array.isArray(state.projects) && state.projects.length === 2 &&
+            state.projects.every(function (p) { return demoNames.indexOf(p.name) !== -1; }) &&
+            Array.isArray(state.items) && state.items.length === 4) {
+          state.projects = [];
+          state.items = [];
+          state.version = 3;
+          this._saveToStorage(state);
+        }
         if (!state.categories || !Array.isArray(state.categories) || state.categories.length === 0) {
           state.categories = JSON.parse(JSON.stringify(T.DEFAULT_CATEGORIES || []));
           this._saveToStorage(state);
@@ -99,6 +110,33 @@
     };
   };
 
+  Store.prototype.getProjectPhases = function () {
+    var defaults = JSON.parse(JSON.stringify(T.PHASES || []));
+    try {
+      var saved = JSON.parse(localStorage.getItem(PHASES_KEY) || "null");
+      if (Array.isArray(saved) && saved.length) return saved;
+    } catch (e) {}
+    return defaults;
+  };
+
+  Store.prototype.saveProjectPhases = function (phases) {
+    if (!Array.isArray(phases) || phases.length === 0) return false;
+    var usedIds = {};
+    var nextId = 0;
+    phases = phases.map(function (p, i) {
+      var id = Number(p.id);
+      if (!isFinite(id) || usedIds[id]) {
+        while (usedIds[nextId]) nextId++;
+        id = nextId++;
+      }
+      usedIds[id] = true;
+      return { id: id, key: p.key || ("phase_" + id), label: String(p.label || "مرحلة " + (i + 1)).trim() };
+    });
+    localStorage.setItem(PHASES_KEY, JSON.stringify(phases));
+    this._notify();
+    return true;
+  };
+
   Store.prototype.getTheme = function () {
     return this.state.theme || "auto";
   };
@@ -133,7 +171,7 @@
   Store.prototype.getProject = function (id) {
     var list = this.state.projects || [];
     for (var i = 0; i < list.length; i++) {
-      if (list[i].id === id) return list[i];
+      if (String(list[i].id) === String(id)) return list[i];
     }
     return null;
   };
@@ -143,7 +181,8 @@
     var client = (params.client || "").trim();
     var cid = (params.cid || params.clientId || "").trim();
     var due = params.due || "";
-    var generateTasks = params.generateTasks !== false;
+    // Suggested tasks are opt-in.
+    var generateTasks = params.generateTasks === true;
 
     var newProj = {
       id: U.generateId(),
@@ -201,10 +240,23 @@
   Store.prototype.changeProjectPhase = function (id, newPhase) {
     var proj = this.getProject(id);
     if (proj) {
-      proj.phase = Number(newPhase);
-      syncEnqueue("project", id, "update", { phase: proj.phase });
+      var phase = Number(newPhase);
+      if (!isFinite(phase)) return proj;
+      proj.phase = phase;
+      // The API uses an upsert for projects. Send the complete project so a
+      // phase-only move cannot blank the name, party, or due date remotely.
+      var payload = {
+        id: proj.id,
+        name: proj.name || "",
+        client: proj.client || "",
+        cid: proj.cid || "",
+        phase: proj.phase,
+        due: proj.due || ""
+      };
+      syncEnqueue("project", proj.id, "update", payload);
       this._notify();
     }
+    return proj || null;
   };
 
   Store.prototype.deleteProject = function (id, deleteAssociatedTasks) {
@@ -219,6 +271,17 @@
       this.state.items = (this.state.items || []).filter(function (i) { return i.pid !== id; });
     }
     this._notify();
+  };
+
+  Store.prototype.restoreProject = function (project, associatedTasks) {
+    if (!project || !project.id || this.getProject(project.id)) return false;
+    this.state.projects.push(project);
+    syncEnqueue("project", project.id, "create", project);
+    (associatedTasks || []).forEach(function (item) {
+      this.restoreItem(item);
+    }, this);
+    this._notify();
+    return true;
   };
 
   /* ---------------------------------------------------------------- clients */
@@ -401,6 +464,18 @@
     this.state.items = (this.state.items || []).filter(function (i) { return i.id !== id; });
     syncEnqueue("item", id, "delete", {});
     this._notify();
+  };
+
+  Store.prototype.restoreItem = function (item) {
+    if (!item || !item.id || this.getItem(item.id)) return false;
+    var restored = {};
+    for (var key in item) {
+      if (item.hasOwnProperty(key) && key !== "source") restored[key] = item[key];
+    }
+    this.state.items.push(restored);
+    syncEnqueue("item", restored.id, "create", restored);
+    this._notify();
+    return true;
   };
 
   Store.prototype.getUnifiedItems = function (options) {
