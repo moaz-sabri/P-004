@@ -34,6 +34,7 @@
   };
 
   NotificationManager.prototype.playChime = function () {
+    try { if (navigator.vibrate) navigator.vibrate([70, 45, 110]); } catch (e) {}
     try {
       var AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -121,7 +122,9 @@
       dir: "rtl",
       lang: "ar",
       tag: "studio-alert",
-      renotify: true
+      renotify: true,
+      vibrate: [70, 45, 110],
+      silent: false
     };
 
     var finalOptions = {};

@@ -11,7 +11,7 @@
   var StatsV = global.StudioStatsView;
   var AgendaV = global.StudioAgendaView;
   var KanbanV = global.StudioKanbanView;
-  var ClientsV = global.StudioClientsView;
+  var EntitiesV = global.StudioEntitiesView || global.StudioClientsView;
   var CW = global.StudioCalendarWeek;
   var Sync = global.StudioSync;
   var Auth = global.StudioAuth;
@@ -68,6 +68,7 @@
     if (global.StudioRouter) global.StudioRouter.init();
     this.initTheme();
     this.initPWA();
+    this.initWelcome();
     if (N) N.startScheduler();
 
     var self = this;
@@ -127,6 +128,25 @@
 
     this.render();
     this.updateNotificationBadge();
+  };
+
+  App.prototype.initWelcome = function () {
+    var self = this;
+    if (sessionStorage.getItem("daftar_welcome_seen")) return;
+    var overlay = document.createElement("section");
+    overlay.className = "welcome-screen";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.innerHTML = '<div class="welcome-card"><div class="welcome-mark" aria-hidden="true"><span>د</span></div><p class="welcome-kicker">مرحبًا بك في</p><h2>دفتر</h2><p class="welcome-copy">مساحتك الهادئة لتنظيم المشاريع والمواعيد والمهام — حتى بدون إنترنت.</p><div class="welcome-actions"><button class="btn welcome-primary" type="button" data-welcome-start>ابدأ الآن <span>←</span></button><button class="welcome-secondary" type="button" data-welcome-notifications>تفعيل الإشعارات</button></div><small>يمكن تغيير الإعدادات لاحقًا من مركز الإشعارات</small></div>';
+    document.body.appendChild(overlay);
+    var close = function (requestNotifications) {
+      if (requestNotifications && N && N.getPermission() === "default") N.requestPermission(function (ok) { if (ok) M.showToast("تم تفعيل الإشعارات مع الاهتزاز", "success"); });
+      sessionStorage.setItem("daftar_welcome_seen", "1");
+      overlay.classList.add("is-closing");
+      setTimeout(function () { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 240);
+    };
+    overlay.querySelector("[data-welcome-start]").addEventListener("click", function () { if (N) N.playChime(); close(false); });
+    overlay.querySelector("[data-welcome-notifications]").addEventListener("click", function () { close(true); });
   };
 
   /* ------------------------------------------------------------------------
@@ -432,8 +452,8 @@
           }
         }, 60), { passive: true });
       }
-    } else if ((this.page === "clients" || this.page === "entities" || this.page === "projects") && ClientsV && this.dom.viewContainer) {
-      this.dom.viewContainer.innerHTML = ClientsV.renderClientsView({
+    } else if ((this.page === "clients" || this.page === "entities" || this.page === "projects") && EntitiesV && this.dom.viewContainer) {
+      this.dom.viewContainer.innerHTML = (EntitiesV.renderEntitiesView || EntitiesV.renderClientsView)({
         searchQuery: this.searchQuery,
         projectOnly: this.page === "projects"
       });
@@ -516,6 +536,9 @@
         M.openNotificationModal();
       });
     }
+    if (this.dom.requestPermBtn) this.dom.requestPermBtn.addEventListener("click", function () { if (N) N.requestPermission(function (ok) { M.showToast(ok ? "تم تفعيل الإشعارات مع الاهتزاز" : "راجع إعدادات المتصفح لتفعيل الإشعارات", ok ? "success" : "error"); M.openNotificationModal(); }); });
+    if (this.dom.testChimeBtn) this.dom.testChimeBtn.addEventListener("click", function () { if (N) { N.playChime(); M.showToast("تم اختبار النغمة والاهتزاز", "success"); } });
+    if (this.dom.testNotifBtn) this.dom.testNotifBtn.addEventListener("click", function () { if (N) N.testNotification(); });
 
     // Auth Profile & Modal trigger
     if (this.dom.userProfileBtn) {

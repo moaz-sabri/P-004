@@ -18,6 +18,22 @@
   --ui-gradient: linear-gradient(135deg, rgba(31, 99, 85, .12), rgba(201, 162, 78, .10));
 }
 
+/* First-open welcome surface and touch-friendly PWA polish */
+.welcome-screen { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px; background: rgba(12, 27, 24, .78); backdrop-filter: blur(16px); animation: welcomeIn .25s ease both; }
+.welcome-screen.is-closing { opacity: 0; transition: opacity .24s ease; }
+.welcome-card { width: min(100%, 430px); padding: 34px 30px 28px; text-align: center; color: #fff; border: 1px solid rgba(255,255,255,.16); border-radius: 28px; background: linear-gradient(145deg, #1f6355, #123d35); box-shadow: 0 24px 70px rgba(0,0,0,.28); }
+.welcome-mark { width: 74px; height: 74px; display: grid; place-items: center; margin: 0 auto 18px; border-radius: 23px; background: linear-gradient(145deg, #e3c56f, #b8872e); color: #153f37; font-size: 2.55rem; font-weight: 800; box-shadow: 0 12px 22px rgba(0,0,0,.2); }
+.welcome-kicker { color: #e6d18b; font-size: .9rem; margin-bottom: 4px; }
+.welcome-card h2 { font-size: 2.15rem; margin-bottom: 10px; }
+.welcome-copy { color: rgba(255,255,255,.82); line-height: 1.8; margin-bottom: 22px; }
+.welcome-actions { display: grid; gap: 10px; }
+.welcome-primary { justify-content: center; width: 100%; min-height: 48px; background: #f4d77d; color: #173f36; border: 0; }
+.welcome-secondary { min-height: 42px; color: rgba(255,255,255,.9); border: 1px solid rgba(255,255,255,.25); border-radius: 12px; }
+.welcome-card small { display: block; margin-top: 18px; color: rgba(255,255,255,.58); }
+@keyframes welcomeIn { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }
+.btn, .btn-icon, .btn-install, .nav-tab, .speed-dial-trigger { min-height: 40px; }
+@media (max-width: 640px) { .welcome-card { padding: 28px 22px 24px; } .app-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; } }
+
 body {
   background-image: radial-gradient(circle at 8% 0%, rgba(31, 99, 85, .08), transparent 30rem),
     radial-gradient(circle at 100% 12%, rgba(201, 162, 78, .07), transparent 24rem);

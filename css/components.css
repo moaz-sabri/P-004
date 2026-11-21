@@ -4,6 +4,11 @@
    Unified Theme & Responsive System (Mobile, Tablet, Laptop)
    ========================================================================== */
 
+.view-section { margin-bottom: 26px; }
+.view-section-header { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.view-section-header h3 { margin:0; font-size:1.05rem; color:var(--ink-primary); }
+.view-card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px; }
+
 /* --------------------------------------------------------------------------
    App Header & Toolbar
    -------------------------------------------------------------------------- */

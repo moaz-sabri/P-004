@@ -5,6 +5,7 @@
   "use strict";
 
   var U = global.StudioUtils;
+  var T = global.StudioViewTemplates;
 
   function getIconSvg(name) {
     switch (name) {
@@ -86,17 +87,16 @@
     var searchQuery = (options.searchQuery || "").trim().toLowerCase();
     var projectOnly = options.projectOnly === true;
     var S = global.StudioStore;
-    var clients = S.getClients();
+    var entities = S.getClients();
     var projects = S.getProjects();
 
     if (projectOnly) {
       if (searchQuery) projects = projects.filter(function (project) { return (project.name || "").toLowerCase().indexOf(searchQuery) !== -1 || (project.client || "").toLowerCase().indexOf(searchQuery) !== -1; });
-      return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><h3 style="margin:0;font-size:1.05rem;color:var(--ink-primary);">قائمة المشاريع (' + projects.length + ')</h3><button class="btn btn-sm" onclick="StudioModalView.openProjectModal()">+ مشروع جديد</button></div>' +
-        (projects.length ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">' + projects.map(renderProjectCard).join("") + '</div>' : '<div class="empty-state"><h4>لا توجد مشاريع حتى الآن</h4><p>أضف أول مشروع لربطه بالمهام والجهات.</p><button class="btn btn-sm" onclick="StudioModalView.openProjectModal()">+ إضافة مشروع</button></div>');
+      return T.pageSection("قائمة المشاريع (" + projects.length + ")", '<button class="btn btn-sm" onclick="StudioModalView.openProjectModal()">+ مشروع جديد</button>', projects.length ? T.grid(projects, renderProjectCard) : T.empty("لا توجد مشاريع حتى الآن", "أضف أول مشروع لربطه بالمهام والجهات.", '<button class="btn btn-sm" onclick="StudioModalView.openProjectModal()">+ إضافة مشروع</button>'));
     }
 
     if (searchQuery) {
-      clients = clients.filter(function (c) {
+      entities = entities.filter(function (c) {
         var nameMatch = (c.name || "").toLowerCase().indexOf(searchQuery) !== -1;
         var phoneMatch = (c.phone || "").toLowerCase().indexOf(searchQuery) !== -1;
         var emailMatch = (c.email || "").toLowerCase().indexOf(searchQuery) !== -1;
@@ -105,43 +105,19 @@
     }
 
     if (S.getClients().length === 0 && projects.length === 0) {
-      return [
-        '<div class="empty-state">',
-        '  <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-        '  <h4>لا توجد جهات حتى الآن</h4>',
-        '  <p>أضف جهتك الأولى لربطها بالمهام والمشاريع ومتابعتها من مكان واحد.</p>',
-        '  <button class="btn btn-sm" id="emptyClientBtn" onclick="StudioModalView.openClientModal()">+ إضافة جهة جديدة</button>',
-        '</div>'
-      ].join("");
+      return T.empty("لا توجد جهات حتى الآن", "أضف جهتك الأولى لربطها بالمهام والمشاريع ومتابعتها من مكان واحد.", '<button class="btn btn-sm" onclick="StudioModalView.openClientModal()">+ إضافة جهة جديدة</button>');
     }
 
-    if (clients.length === 0) {
-      return [
-        '<div class="empty-state">',
-        '  <h4>لا توجد نتائج مطابقة</h4>',
-        '  <p>جرّب تغيير عبارة البحث.</p>',
-        '  <button class="btn btn-sm" onclick="StudioModalView.openClientModal()">+ إضافة جهة جديدة</button>',
-        '</div>'
-      ].join("");
-    }
+    if (entities.length === 0) return T.empty("لا توجد نتائج مطابقة", "جرّب تغيير عبارة البحث.", '<button class="btn btn-sm" onclick="StudioModalView.openClientModal()">+ إضافة جهة جديدة</button>');
 
-    var toolbar = [
-      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">',
-      '  <h3 style="margin:0; font-size:1.05rem; color:var(--ink-primary);">قائمة الجهات (' + clients.length + ')</h3>',
-      '  <button class="btn btn-sm" onclick="StudioModalView.openClientModal()">+ جهة جديدة</button>',
-      '</div>',
-      '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">'
-    ].join("");
-
-    return toolbar + clients.map(renderClientCard).join("") + '</div>' +
-      '<div style="display:flex; justify-content:space-between; align-items:center; margin:26px 0 12px; flex-wrap:wrap; gap:8px;">' +
-      '<h3 style="margin:0; font-size:1.05rem; color:var(--ink-primary);">قائمة المشاريع (' + projects.length + ')</h3>' +
-      '<button class="btn btn-sm" onclick="StudioModalView.openProjectModal()">+ مشروع جديد</button></div>' +
-      (projects.length ? '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">' + projects.map(renderProjectCard).join("") + '</div>' : '<div class="empty-state"><h4>لا توجد مشاريع حتى الآن</h4><p>أضف أول مشروع لربطه بالمهام والجهات.</p></div>');
+    return T.pageSection("قائمة الجهات (" + entities.length + ")", '<button class="btn btn-sm" onclick="StudioModalView.openClientModal()">+ جهة جديدة</button>', T.grid(entities, renderClientCard)) +
+      T.pageSection("قائمة المشاريع (" + projects.length + ")", '<button class="btn btn-sm" onclick="StudioModalView.openProjectModal()">+ مشروع جديد</button>', projects.length ? T.grid(projects, renderProjectCard) : T.empty("لا توجد مشاريع حتى الآن", "أضف أول مشروع لربطه بالمهام والجهات."));
   }
 
-  global.StudioClientsView = {
+  global.StudioEntitiesView = {
+    renderEntitiesView: renderClientsView,
     renderClientsView: renderClientsView,
     getIconSvg: getIconSvg
   };
+  global.StudioClientsView = global.StudioEntitiesView;
 })(window);

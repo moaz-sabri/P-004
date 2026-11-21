@@ -101,7 +101,7 @@ P-004/
 │   ├── change_log.php          # سجل العمليات وتحديد مصدر online/offline
 │   └── index.php               # الموجه المركزي للـ API
 ├── index.html                  # صفحة الأجندة والمواعيد والتقويم الأسبوعي
-├── projects.html               # صفحة لوحة المشاريع (Kanban)
+├── projects.html               # صفحة المشاريع 
 ├── clients.html                # صفحة إدارة العملاء
 ├── settings.html               # صفحة الإعدادات وقاعدة البيانات والنسخ
 ├── manifest.json & sw.js       # ملفات PWA للعمل بدون إنترنت
